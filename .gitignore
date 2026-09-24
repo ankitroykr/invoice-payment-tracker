@@ -427,3 +427,9 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# Rider workspace files
+**/.idea/
+
+# macOS metadata
+.DS_Store

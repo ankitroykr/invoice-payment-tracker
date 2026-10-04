@@ -1,6 +1,8 @@
-@InvoiceTracker.Api_HostAddress = http://localhost:5055
+@baseUrl = https://localhost:7160
 
-GET {{InvoiceTracker.Api_HostAddress}}/weatherforecast/
+GET {{baseUrl}}/health/live
 Accept: application/json
 
 ###
+GET {{baseUrl}}/health/ready
+Accept: application/json

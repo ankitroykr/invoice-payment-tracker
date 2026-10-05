@@ -8,7 +8,8 @@ I am building it incrementally, one small feature per pull request, to show end-
 
 - ✅ ASP.NET Core API (.NET 10) running locally
 - ✅ Liveness and readiness health check endpoints
-- ⏭️ Next: restructure the solution into `src/` and `tests/` with shared build settings
+- ✅ Solution layout with `src/`, SDK pinned via `global.json`, shared `.editorconfig`
+- ⏭️ Next: CI build with GitHub Actions
 
 ## Technology stack
 
@@ -22,7 +23,8 @@ I am building it incrementally, one small feature per pull request, to show end-
 
 - [x] Create and run the initial API
 - [x] Add liveness and readiness health checks
-- [ ] Project structure, shared build settings and CI build
+- [x] Project structure, SDK pinning and editor settings
+- [ ] CI build with GitHub Actions
 - [ ] SQL Server via Docker and Entity Framework Core
 - [ ] Customers and invoices API
 - [ ] Payment recording with idempotency and concurrency control
@@ -34,7 +36,7 @@ I am building it incrementally, one small feature per pull request, to show end-
 
 ### Prerequisites
 
-- [.NET 10 SDK](https://dotnet.microsoft.com/download)
+- [.NET 10 SDK](https://dotnet.microsoft.com/download) (10.0.401 or later; pinned in `global.json`)
 - JetBrains Rider or VS Code
 - A trusted HTTPS development certificate:
 
@@ -47,10 +49,10 @@ I am building it incrementally, one small feature per pull request, to show end-
 From the repository root:
 
 ```bash
-dotnet run --project InvoiceTracker/InvoiceTracker.Api --launch-profile https
+dotnet run --project src/InvoiceTracker.Api --launch-profile https
 ```
 
-Or, in Rider, select the **InvoiceTracker.Api: https** run configuration.
+Or open `InvoiceTracker.sln` in Rider and select the **InvoiceTracker.Api: https** run configuration.
 
 The API listens on `https://localhost:7160`.
 
@@ -67,7 +69,7 @@ Both return JSON, for example:
 { "status": "Healthy", "checks": [] }
 ```
 
-Example requests are in [`InvoiceTracker.Api.http`](InvoiceTracker/InvoiceTracker.Api/InvoiceTracker.Api.http) and can be run from Rider or VS Code.
+Example requests are in [`InvoiceTracker.Api.http`](src/InvoiceTracker.Api/InvoiceTracker.Api.http) and can be run from Rider or VS Code.
 
 ## Licence
 

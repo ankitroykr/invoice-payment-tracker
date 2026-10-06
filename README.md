@@ -9,7 +9,8 @@ I am building it incrementally, one small feature per pull request, to show end-
 - ✅ ASP.NET Core API (.NET 10) running locally
 - ✅ Liveness and readiness health check endpoints
 - ✅ Solution layout with `src/`, SDK pinned via `global.json`, shared `.editorconfig`
-- ⏭️ Next: CI build with GitHub Actions
+- ✅ CI build with GitHub Actions; `main` protected by required status checks
+- ⏭️ Next: SQL Server via Docker and Entity Framework Core
 
 ## Technology stack
 
@@ -24,7 +25,7 @@ I am building it incrementally, one small feature per pull request, to show end-
 - [x] Create and run the initial API
 - [x] Add liveness and readiness health checks
 - [x] Project structure, SDK pinning and editor settings
-- [ ] CI build with GitHub Actions
+- [x] CI build with GitHub Actions
 - [ ] SQL Server via Docker and Entity Framework Core
 - [ ] Customers and invoices API
 - [ ] Payment recording with idempotency and concurrency control
@@ -70,6 +71,14 @@ Both return JSON, for example:
 ```
 
 Example requests are in [`InvoiceTracker.Api.http`](src/InvoiceTracker.Api/InvoiceTracker.Api.http) and can be run from Rider or VS Code.
+
+## Continuous integration
+
+Every pull request to `main`, and every push to `main`, runs the [CI workflow](.github/workflows/ci.yml) on GitHub Actions: restore, build (Release) and test, using the .NET SDK pinned in `global.json`. Pull requests cannot be merged into `main` until the `build` check passes.
+
+The workflow started from GitHub's official [.NET starter workflow](https://github.com/actions/starter-workflows/blob/main/ci/dotnet.yml), updated to current action versions, the pinned SDK, Release builds, least-privilege permissions and concurrency cancellation.
+
+Runs are listed under the repository's [Actions tab](https://github.com/ankitroykr/invoice-payment-tracker/actions).
 
 ## Licence
 

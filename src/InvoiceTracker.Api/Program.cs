@@ -12,7 +12,8 @@ builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
-builder.Services.AddHealthChecks();
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<InvoiceTrackerDbContext>(name: "database", tags: ["ready"]);
 
 var connectionString = builder.Configuration.GetConnectionString("InvoiceTrackerDb") ??
                        throw new InvalidOperationException("Connection string 'InvoiceTrackerDb' not found.");

@@ -31,4 +31,4 @@ jobs:
       - name: Build
         run: dotnet build InvoiceTracker.sln --configuration Release --no-restore
       - name: Test
-        run: dotnet test InvoiceTracker.sln --configuration Release --no-build --verbosity normal
+        run: dotnet test --solution InvoiceTracker.sln --configuration Release --no-build --verbosity normal

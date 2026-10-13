@@ -11,6 +11,7 @@ When complete, the application will let freelancers create invoices, record full
 - [x] Project structure, SDK pinning and editor settings
 - [x] CI build with GitHub Actions, with `main` protected by required checks
 - [x] SQL Server via Docker Compose, EF Core migrations and a database readiness check
+- [x] Integration tests against a real SQL Server with Testcontainers, run in CI
 - [ ] Customers and invoices API
 - [ ] Payment recording with idempotency and concurrency control
 - [ ] Angular website
@@ -23,18 +24,19 @@ When complete, the application will let freelancers create invoices, record full
 - **Data:** SQL Server 2022 (Docker locally) with Entity Framework Core 10
 - **Delivery:** GitHub Actions, with Azure hosting in a later phase
 - **Frontend:** Angular and TypeScript (planned)
-- **Testing:** xUnit with Testcontainers for integration tests (planned)
+- **Testing:** xUnit v3 on Microsoft Testing Platform, with `WebApplicationFactory` and Testcontainers for integration tests
 
 ## Repository layout
 
 ```
-├── .github/workflows/ci.yml   CI workflow
-├── src/InvoiceTracker.Api/    ASP.NET Core API, EF Core DbContext and migrations
-├── compose.yaml               Local SQL Server
-├── .env.example               Template for the local .env file
-├── global.json                Pinned .NET SDK version
-├── .editorconfig              Shared formatting and code style rules
-└── InvoiceTracker.sln         Solution file
+├── .github/workflows/ci.yml                   CI workflow
+├── src/InvoiceTracker.Api/                    ASP.NET Core API, EF Core DbContext and migrations
+├── tests/InvoiceTracker.Api.IntegrationTests/ Integration tests for the API
+├── compose.yaml                               Local SQL Server
+├── .env.example                               Template for the local .env file
+├── global.json                                Pinned .NET SDK version and test runner
+├── .editorconfig                              Shared formatting and code style rules
+└── InvoiceTracker.sln                         Solution file
 ```
 
 ## Running the application
@@ -105,9 +107,21 @@ Both return JSON. For example, from `/health/ready`:
 
 Example requests are in [`InvoiceTracker.Api.http`](src/InvoiceTracker.Api/InvoiceTracker.Api.http) and can be run from Rider or VS Code.
 
+### Run the tests
+
+With Docker Desktop running, from the repository root:
+
+```bash
+dotnet test --solution InvoiceTracker.sln
+```
+
+Or run them from the test runner in Rider.
+
+The integration tests do not use the Compose database or the connection string above. Each run starts its own SQL Server container with Testcontainers, starts the API in memory with `WebApplicationFactory`, and removes the container afterwards. The first run is slower while the SQL Server image downloads.
+
 ## Continuous integration
 
-Every pull request to `main`, and every push to `main`, runs the [CI workflow](.github/workflows/ci.yml) on GitHub Actions. It restores, builds and tests the solution in Release, using the SDK pinned in `global.json`. Pull requests can only be merged once the `build` check passes.
+Every pull request to `main`, and every push to `main`, runs the [CI workflow](.github/workflows/ci.yml) on GitHub Actions. It restores, builds and tests the solution in Release, using the SDK pinned in `global.json`. The integration tests start SQL Server in Docker on the GitHub Actions runner. Pull requests can only be merged once the `build` check passes.
 
 The workflow is based on GitHub's official [.NET starter workflow](https://github.com/actions/starter-workflows/blob/main/ci/dotnet.yml). I updated the action versions, read the SDK version from `global.json`, and added read-only permissions and cancellation of outdated runs.
 
@@ -121,6 +135,10 @@ Runs are listed under the repository's [Actions tab](https://github.com/ankitroy
 - [EF Core migrations](https://learn.microsoft.com/en-us/ef/core/managing-schemas/migrations/)
 - [Safe storage of app secrets in development](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets)
 - [GitHub Actions workflow syntax](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax)
+- [Integration tests in ASP.NET Core](https://learn.microsoft.com/en-us/aspnet/core/test/integration-tests)
+- [Getting started with xUnit.net v3](https://xunit.net/docs/getting-started/v3/getting-started)
+- [Testcontainers for .NET: Microsoft SQL Server module](https://dotnet.testcontainers.org/modules/mssql/)
+- [Testing with dotnet test](https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-platform-integration-dotnet-test)
 
 ## Licence
 

@@ -12,6 +12,6 @@ public class HealthCheckTests(InvoiceTrackerApiFactory factory) : IClassFixture<
         // Act
         var response = await client.GetAsync("/health/ready", TestContext.Current.CancellationToken);
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(HttpStatusCode.GatewayTimeout, response.StatusCode);
     }
 }

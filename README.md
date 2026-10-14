@@ -12,6 +12,7 @@ When complete, the application will let freelancers create invoices, record full
 - [x] CI build with GitHub Actions, with `main` protected by required checks
 - [x] SQL Server via Docker Compose, EF Core migrations and a database readiness check
 - [x] Integration tests against a real SQL Server with Testcontainers, run in CI
+- [x] Structured logging with Serilog, configured from `appsettings.json`
 - [ ] Customers and invoices API
 - [ ] Payment recording with idempotency and concurrency control
 - [ ] Angular website
@@ -22,6 +23,7 @@ When complete, the application will let freelancers create invoices, record full
 
 - **Backend:** C#, ASP.NET Core (.NET 10)
 - **Data:** SQL Server 2022 (Docker locally) with Entity Framework Core 10
+- **Logging:** Serilog structured logging, with request logging middleware
 - **Delivery:** GitHub Actions, with Azure hosting in a later phase
 - **Frontend:** Angular and TypeScript (planned)
 - **Testing:** xUnit v3 on Microsoft Testing Platform, with `WebApplicationFactory` and Testcontainers for integration tests
@@ -107,6 +109,23 @@ Both return JSON. For example, from `/health/ready`:
 
 Example requests are in [`InvoiceTracker.Api.http`](src/InvoiceTracker.Api/InvoiceTracker.Api.http) and can be run from Rider or VS Code.
 
+### Logging
+
+The API logs with Serilog. Levels and outputs are set in the `Serilog` section of [`appsettings.json`](src/InvoiceTracker.Api/appsettings.json), not in code, so they can change per environment without a rebuild.
+
+- **Console:** in every environment.
+- **File:** in Development only ([`appsettings.Development.json`](src/InvoiceTracker.Api/appsettings.Development.json)), a daily rolling file named `logs/log-yyyyMMdd.txt` in the working directory (the project folder when run from Rider). Files are kept for 14 days, up to 31 files. The `logs` folder is git-ignored.
+- **Requests:** each HTTP request is written as one structured event with the method, path, status code and elapsed time. `5xx` responses are logged as errors. The framework's own per-request logs are reduced by setting `Microsoft.AspNetCore` to `Warning`.
+- **Startup:** a console-only bootstrap logger runs before configuration loads, so a failed startup is still logged.
+
+Example output:
+
+```
+[2026-10-14 15:48:12 Info] HTTP GET /health/live responded 200 in 11.5182 ms
+```
+
+To change a level without editing a file, override the configuration key with an environment variable, for example `Serilog__MinimumLevel__Default=Debug`.
+
 ### Run the tests
 
 With Docker Desktop running, from the repository root:
@@ -138,6 +157,10 @@ Runs are listed under the repository's [Actions tab](https://github.com/ankitroy
 - [Integration tests in ASP.NET Core](https://learn.microsoft.com/en-us/aspnet/core/test/integration-tests)
 - [Getting started with xUnit.net v3](https://xunit.net/docs/getting-started/v3/getting-started)
 - [Testcontainers for .NET: Microsoft SQL Server module](https://dotnet.testcontainers.org/modules/mssql/)
+- [Serilog.AspNetCore](https://github.com/serilog/serilog-aspnetcore)
+- [Serilog.Settings.Configuration](https://github.com/serilog/serilog-settings-configuration)
+- [Serilog file sink](https://github.com/serilog/serilog-sinks-file)
+- [Configuration in ASP.NET Core](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration/)
 - [Testing with dotnet test](https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-platform-integration-dotnet-test)
 
 ## Licence

@@ -15,6 +15,7 @@ When complete, the application will let freelancers create invoices, record full
 - [x] SQL Server via Docker Compose, EF Core migrations and a database readiness check
 - [x] Integration tests against a real SQL Server with Testcontainers, run in CI
 - [x] Structured logging with Serilog, configured from `appsettings.json`
+- [x] Consistent error responses with Problem Details (RFC 9457)
 - [ ] Customers and invoices API
 - [ ] Payment recording with idempotency and concurrency control
 - [ ] Angular website
@@ -111,6 +112,27 @@ Both return JSON. For example, from `/health/ready`:
 
 Example requests are in [`InvoiceTracker.Api.http`](src/InvoiceTracker.Api/InvoiceTracker.Api.http) and can be run from Rider or VS Code.
 
+### Error responses
+
+Errors are returned as Problem Details ([RFC 9457](https://www.rfc-editor.org/rfc/rfc9457)) with the content type `application/problem+json`, so clients can handle every error the same way.
+
+- **Unhandled exceptions** return `500` with a generic message. Exception details are never sent to clients outside Development.
+- **Empty error responses**, such as a `404` for an unknown route, get a Problem Details body.
+- **Development** still shows the full exception details, as Problem Details for API clients (or as an HTML page in a browser).
+
+For example, a request to an unknown route returns:
+
+```json
+{
+  "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
+  "title": "Not Found",
+  "status": 404,
+  "traceId": "00-98018a5a63bf32ac72605b6df3c1d7a9-cc6a721fa3f06d60-00"
+}
+```
+
+The `traceId` identifies the request. Its middle part (32 characters) is the trace ID that appears at the end of the matching log lines, so an error a client reports can be traced in the logs.
+
 ### Logging
 
 The API logs with Serilog. Levels and outputs are set in the `Serilog` section of [`appsettings.json`](src/InvoiceTracker.Api/appsettings.json), not in code, so they can change per environment without a rebuild.
@@ -119,11 +141,12 @@ The API logs with Serilog. Levels and outputs are set in the `Serilog` section o
 - **File:** in Development only ([`appsettings.Development.json`](src/InvoiceTracker.Api/appsettings.Development.json)), a daily rolling file named `logs/log-yyyyMMdd.txt` in the working directory (the project folder when run from Rider). Files are kept for 14 days, up to 31 files. The `logs` folder is git-ignored.
 - **Requests:** each HTTP request is written as one structured event with the method, path, status code and elapsed time. `5xx` responses are logged as errors. The framework's own per-request logs are reduced by setting `Microsoft.AspNetCore` to `Warning`.
 - **Startup:** a console-only bootstrap logger runs before configuration loads, so a failed startup is still logged.
+- **Trace ID:** each line written during a request ends with the request's trace ID in brackets, matching the `traceId` in error responses. Lines written outside a request, such as at startup, show empty brackets.
 
 Example output:
 
 ```
-[2026-10-14 15:48:12 Info] HTTP GET /health/live responded 200 in 11.5182 ms
+[2026-10-17 15:07:07 Info] HTTP GET /does-not-exist responded 404 in 0.0186 ms (98018a5a63bf32ac72605b6df3c1d7a9)
 ```
 
 To change a level without editing a file, override the configuration key with an environment variable, for example `Serilog__MinimumLevel__Default=Debug`.
@@ -138,7 +161,7 @@ dotnet test --solution InvoiceTracker.sln
 
 Or run them from the test runner in Rider.
 
-The integration tests do not use the Compose database or the connection string above. Each run starts its own SQL Server container with Testcontainers, starts the API in memory with `WebApplicationFactory`, and removes the container afterwards. The first run is slower while the SQL Server image downloads.
+The integration tests do not use the Compose database or the connection string above. Each run starts its own SQL Server container with Testcontainers (currently one per test class), starts the API in memory with `WebApplicationFactory`, and removes the container afterwards. The first run is slower while the SQL Server image downloads.
 
 ## Continuous integration
 
@@ -163,6 +186,9 @@ Runs are listed under the repository's [Actions tab](https://github.com/ankitroy
 - [Serilog.Settings.Configuration](https://github.com/serilog/serilog-settings-configuration)
 - [Serilog file sink](https://github.com/serilog/serilog-sinks-file)
 - [Configuration in ASP.NET Core](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration/)
+- [Handle errors in ASP.NET Core APIs](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/error-handling-api)
+- [RFC 9457: Problem Details for HTTP APIs](https://www.rfc-editor.org/rfc/rfc9457)
+- [W3C Trace Context](https://www.w3.org/TR/trace-context/)
 - [Testing with dotnet test](https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-platform-integration-dotnet-test)
 
 ## Licence

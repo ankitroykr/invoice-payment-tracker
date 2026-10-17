@@ -9,7 +9,7 @@ using Serilog.Sinks.SystemConsole.Themes;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console(theme: AnsiConsoleTheme.Sixteen,
-        outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:t4}] {Message:lj}{NewLine}{Exception}")
+        outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:t4}] {Message:lj} ({TraceId}){NewLine}{Exception}")
     .CreateBootstrapLogger();
 
 var applicationName = typeof(Program).Assembly.GetName().Name;
@@ -27,6 +27,7 @@ try
         .Enrich.FromLogContext());
 
     builder.Services.AddControllers();
+    builder.Services.AddProblemDetails();
     // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
     builder.Services.AddOpenApi();
 
@@ -41,10 +42,14 @@ try
     var app = builder.Build();
 
     // Configure the HTTP request pipeline.
+    app.UseExceptionHandler();
+    app.UseStatusCodePages();
+
     app.UseSerilogRequestLogging();
 
     if (app.Environment.IsDevelopment())
     {
+        app.UseDeveloperExceptionPage();
         app.MapOpenApi();
     }
 

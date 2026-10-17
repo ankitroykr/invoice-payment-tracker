@@ -6,3 +6,7 @@ Accept: application/json
 ###
 GET {{baseUrl}}/health/ready
 Accept: application/json
+
+###
+GET {{baseUrl}}/does-not-exist
+Accept: application/json

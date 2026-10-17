@@ -1,8 +1,12 @@
+using InvoiceTracker.Api.IntegrationTests;
+
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
 using Testcontainers.MsSql;
+
+[assembly: AssemblyFixture(typeof(InvoiceTrackerApiFactory))]
 
 namespace InvoiceTracker.Api.IntegrationTests;
 
@@ -16,6 +20,7 @@ public sealed class InvoiceTrackerApiFactory : WebApplicationFactory<Program>, I
     public async ValueTask InitializeAsync()
     {
         await _msSqlContainer.StartAsync();
+        StartServer();
     }
 
     protected override IHost CreateHost(IHostBuilder builder)

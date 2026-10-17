@@ -5,11 +5,11 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 
 using Serilog;
-using Serilog.Sinks.SystemConsole.Themes;
+using Serilog.Templates;
 
 Log.Logger = new LoggerConfiguration()
-    .WriteTo.Console(theme: AnsiConsoleTheme.Sixteen,
-        outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:t4}] {Message:lj} ({TraceId}){NewLine}{Exception}")
+    .WriteTo.Console(new ExpressionTemplate(
+        "[{@t:yyyy-MM-dd HH:mm:ss} {@l:t4}] {@m}{#if @tr is not null} ({@tr}){#end}\n{@x}"))
     .CreateBootstrapLogger();
 
 var applicationName = typeof(Program).Assembly.GetName().Name;

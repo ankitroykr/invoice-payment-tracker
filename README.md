@@ -161,7 +161,7 @@ dotnet test --solution InvoiceTracker.sln
 
 Or run them from the test runner in Rider.
 
-The integration tests do not use the Compose database or the connection string above. Each run starts its own SQL Server container with Testcontainers (currently one per test class), starts the API in memory with `WebApplicationFactory`, and removes the container afterwards. The first run is slower while the SQL Server image downloads.
+The integration tests do not use the Compose database or the connection string above. Each run starts one SQL Server container with Testcontainers and one in-memory instance of the API with `WebApplicationFactory`, shared by all test classes through an xUnit assembly fixture, and removes the container afterwards. The first run is slower while the SQL Server image downloads.
 
 ## Continuous integration
 
@@ -181,6 +181,7 @@ Runs are listed under the repository's [Actions tab](https://github.com/ankitroy
 - [GitHub Actions workflow syntax](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax)
 - [Integration tests in ASP.NET Core](https://learn.microsoft.com/en-us/aspnet/core/test/integration-tests)
 - [Getting started with xUnit.net v3](https://xunit.net/docs/getting-started/v3/getting-started)
+- [Shared context between tests in xUnit.net](https://xunit.net/docs/shared-context)
 - [Testcontainers for .NET: Microsoft SQL Server module](https://dotnet.testcontainers.org/modules/mssql/)
 - [Serilog.AspNetCore](https://github.com/serilog/serilog-aspnetcore)
 - [Serilog.Settings.Configuration](https://github.com/serilog/serilog-settings-configuration)

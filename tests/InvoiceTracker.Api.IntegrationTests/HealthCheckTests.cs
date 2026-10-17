@@ -2,7 +2,7 @@ using System.Net;
 
 namespace InvoiceTracker.Api.IntegrationTests;
 
-public class HealthCheckTests(InvoiceTrackerApiFactory factory) : IClassFixture<InvoiceTrackerApiFactory>
+public class HealthCheckTests(InvoiceTrackerApiFactory factory)
 {
     [Fact]
     public async Task GetReady_ReturnsOk_WhenDatabaseIsAvailable()

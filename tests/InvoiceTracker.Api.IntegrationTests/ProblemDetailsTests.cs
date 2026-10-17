@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace InvoiceTracker.Api.IntegrationTests;
 
-public class ProblemDetailsTests(InvoiceTrackerApiFactory factory) : IClassFixture<InvoiceTrackerApiFactory>
+public class ProblemDetailsTests(InvoiceTrackerApiFactory factory)
 {
     [Fact]
     public async Task GetUnknownRoute_ReturnsProblemDetails404()

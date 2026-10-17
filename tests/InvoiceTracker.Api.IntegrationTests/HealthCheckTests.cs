@@ -9,8 +9,10 @@ public class HealthCheckTests(InvoiceTrackerApiFactory factory) : IClassFixture<
     {
         // Arrange
         var client = factory.CreateClient();
+
         // Act
         var response = await client.GetAsync("/health/ready", TestContext.Current.CancellationToken);
+
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }

@@ -9,7 +9,7 @@ using Serilog.Sinks.SystemConsole.Themes;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console(theme: AnsiConsoleTheme.Sixteen,
-        outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:t4}] {Message:lj}{NewLine}{Exception}")
+        outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:t4}] {Message:lj} ({TraceId}){NewLine}{Exception}")
     .CreateBootstrapLogger();
 
 var applicationName = typeof(Program).Assembly.GetName().Name;

@@ -141,12 +141,14 @@ The API logs with Serilog. Levels and outputs are set in the `Serilog` section o
 - **File:** in Development only ([`appsettings.Development.json`](src/InvoiceTracker.Api/appsettings.Development.json)), a daily rolling file named `logs/log-yyyyMMdd.txt` in the working directory (the project folder when run from Rider). Files are kept for 14 days, up to 31 files. The `logs` folder is git-ignored.
 - **Requests:** each HTTP request is written as one structured event with the method, path, status code and elapsed time. `5xx` responses are logged as errors. The framework's own per-request logs are reduced by setting `Microsoft.AspNetCore` to `Warning`.
 - **Startup:** a console-only bootstrap logger runs before configuration loads, so a failed startup is still logged.
-- **Trace ID:** each line written during a request ends with the request's trace ID in brackets, matching the `traceId` in error responses. Lines written outside a request, such as at startup, show empty brackets.
+- **Format:** console and file lines use a Serilog.Expressions `ExpressionTemplate`, configured in the same `appsettings` files. Output is plain text, without colours, so it reads the same on light and dark backgrounds.
+- **Trace ID:** each line written during a request ends with the request's trace ID in brackets, matching the `traceId` in error responses. Lines written outside a request, such as at startup, have no trace ID and end after the message.
 
 Example output:
 
 ```
-[2026-10-17 15:07:07 Info] HTTP GET /does-not-exist responded 404 in 0.0186 ms (98018a5a63bf32ac72605b6df3c1d7a9)
+[2026-10-17 20:32:34 Info] Hosting environment: Development
+[2026-10-17 20:32:55 Info] HTTP GET /health/live responded 200 in 16.5845 ms (30da7012ec6e912a255f9807ab3e31c6)
 ```
 
 To change a level without editing a file, override the configuration key with an environment variable, for example `Serilog__MinimumLevel__Default=Debug`.
@@ -186,6 +188,7 @@ Runs are listed under the repository's [Actions tab](https://github.com/ankitroy
 - [Serilog.AspNetCore](https://github.com/serilog/serilog-aspnetcore)
 - [Serilog.Settings.Configuration](https://github.com/serilog/serilog-settings-configuration)
 - [Serilog file sink](https://github.com/serilog/serilog-sinks-file)
+- [Serilog.Expressions](https://github.com/serilog/serilog-expressions)
 - [Configuration in ASP.NET Core](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration/)
 - [Handle errors in ASP.NET Core APIs](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/error-handling-api)
 - [RFC 9457: Problem Details for HTTP APIs](https://www.rfc-editor.org/rfc/rfc9457)

@@ -16,6 +16,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.13"/>
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="10.0.13"/>
     <PackageReference Include="Serilog.AspNetCore" Version="10.0.0"/>
+    <PackageReference Include="Serilog.Expressions" Version="5.0.0" />
     <!--
       Overrides the vulnerable System.Security.Cryptography.Pkcs 9.0.11 pulled in transitively by
       Microsoft.Data.SqlClient 6.1.7 (via Microsoft.EntityFrameworkCore.SqlServer).

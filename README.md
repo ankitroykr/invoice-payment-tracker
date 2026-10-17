@@ -1,5 +1,7 @@
 # Invoice and Payment Tracker
 
+[![CI](https://github.com/ankitroykr/invoice-payment-tracker/actions/workflows/ci.yml/badge.svg)](https://github.com/ankitroykr/invoice-payment-tracker/actions/workflows/ci.yml) [![Licence](https://img.shields.io/github/license/ankitroykr/invoice-payment-tracker)](LICENSE) [![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4)](https://dotnet.microsoft.com/download/dotnet/10.0)
+
 A personal project to build an invoice and payment tracker from scratch, the way I would at work: in small pull requests, with CI checking every change.
 
 When complete, the application will let freelancers create invoices, record full and partial payments, and keep track of outstanding and overdue balances. It is built with ASP.NET Core and SQL Server, with an Angular front end and Azure hosting planned.

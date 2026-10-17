@@ -27,6 +27,7 @@ try
         .Enrich.FromLogContext());
 
     builder.Services.AddControllers();
+    builder.Services.AddProblemDetails();
     // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
     builder.Services.AddOpenApi();
 
@@ -41,10 +42,14 @@ try
     var app = builder.Build();
 
     // Configure the HTTP request pipeline.
+    app.UseExceptionHandler();
+    app.UseStatusCodePages();
+
     app.UseSerilogRequestLogging();
 
     if (app.Environment.IsDevelopment())
     {
+        app.UseDeveloperExceptionPage();
         app.MapOpenApi();
     }
 

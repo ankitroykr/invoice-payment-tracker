@@ -39,12 +39,17 @@ When complete, the application will let freelancers create invoices, record full
 ├── .github/workflows/ci.yml                   CI workflow
 ├── src/InvoiceTracker.Api/                    ASP.NET Core API, EF Core DbContext and migrations
 ├── tests/InvoiceTracker.Api.IntegrationTests/ Integration tests for the API
+├── docs/adr/                                  Architecture decision records
 ├── compose.yaml                               Local SQL Server
 ├── .env.example                               Template for the local .env file
 ├── global.json                                Pinned .NET SDK version and test runner
 ├── .editorconfig                              Shared formatting and code style rules
 └── InvoiceTracker.sln                         Solution file
 ```
+
+## Architecture decisions
+
+Significant design decisions are recorded as architecture decision records (ADRs) in [`docs/adr`](docs/adr/README.md), using the MADR format. Each one explains the context, the options considered and why one was chosen, for example why the API mixes controllers and minimal APIs, and why the integration tests use a real SQL Server.
 
 ## Running the application
 

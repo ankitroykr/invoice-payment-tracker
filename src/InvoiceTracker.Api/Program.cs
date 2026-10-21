@@ -4,6 +4,8 @@ using InvoiceTracker.Api.Data;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 
+using Scalar.AspNetCore;
+
 using Serilog;
 using Serilog.Templates;
 
@@ -51,6 +53,7 @@ try
     {
         app.UseDeveloperExceptionPage();
         app.MapOpenApi();
+        app.MapScalarApiReference();
     }
 
     app.UseHttpsRedirection();

@@ -1,9 +1,11 @@
 using System.Net;
 using System.Net.Http.Json;
 
+using InvoiceTracker.Api.IntegrationTests.Infrastructure;
+
 using Microsoft.AspNetCore.Mvc;
 
-namespace InvoiceTracker.Api.IntegrationTests;
+namespace InvoiceTracker.Api.IntegrationTests.ErrorHandling;
 
 public class ProblemDetailsTests(InvoiceTrackerApiFactory factory)
 {

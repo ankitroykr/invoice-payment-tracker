@@ -1,6 +1,8 @@
 using System.Net;
 
-namespace InvoiceTracker.Api.IntegrationTests;
+using InvoiceTracker.Api.IntegrationTests.Infrastructure;
+
+namespace InvoiceTracker.Api.IntegrationTests.Health;
 
 public class HealthCheckTests(InvoiceTrackerApiFactory factory)
 {

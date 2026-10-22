@@ -1,4 +1,4 @@
-using InvoiceTracker.Api.IntegrationTests;
+using InvoiceTracker.Api.IntegrationTests.Infrastructure;
 
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
@@ -8,7 +8,7 @@ using Testcontainers.MsSql;
 
 [assembly: AssemblyFixture(typeof(InvoiceTrackerApiFactory))]
 
-namespace InvoiceTracker.Api.IntegrationTests;
+namespace InvoiceTracker.Api.IntegrationTests.Infrastructure;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 public sealed class InvoiceTrackerApiFactory : WebApplicationFactory<Program>, IAsyncLifetime

@@ -14,3 +14,4 @@ The significant decisions behind this project, one short file each, in [MADR](ht
 | [0008](0008-rich-domain-model.md) | Use a rich domain model where there are business rules | Accepted |
 | [0009](0009-money-value-object.md) | Represent money as a value object with amount and currency | Accepted |
 | [0010](0010-result-type-for-business-failures.md) | Return a Result for expected business failures | Accepted |
+| [0011](0011-repositories-and-unit-of-work.md) | Use a generic repository per aggregate root with a unit of work | Accepted |

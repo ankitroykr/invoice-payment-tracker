@@ -1,9 +1,11 @@
+using InvoiceTracker.Domain.Common;
+
 namespace InvoiceTracker.Domain.Customers;
 
 /// <summary>
 /// A customer who can be sent invoices. Create one with <see cref="Create"/>.
 /// </summary>
-public sealed class Customer
+public sealed class Customer : IAggregateRoot
 {
     /// <summary>
     /// The customer's identifier. The database assigns it when the customer is saved, so it is 0 on a new customer.

@@ -1,5 +1,3 @@
-using Ardalis.GuardClauses;
-
 namespace InvoiceTracker.Domain.Customers;
 
 /// <summary>
@@ -38,8 +36,8 @@ public sealed class Customer
     /// <exception cref="ArgumentException">The name or email is empty or whitespace.</exception>
     public static Customer Create(string name, string email)
     {
-        Guard.Against.NullOrWhiteSpace(name);
-        Guard.Against.NullOrWhiteSpace(email);
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        ArgumentException.ThrowIfNullOrWhiteSpace(email);
 
         return new Customer(name, email);
     }

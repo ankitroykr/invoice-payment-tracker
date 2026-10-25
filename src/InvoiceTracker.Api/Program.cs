@@ -1,8 +1,8 @@
 using InvoiceTracker.Api;
+using InvoiceTracker.Infrastructure;
 using InvoiceTracker.Infrastructure.Data;
 
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.EntityFrameworkCore;
 
 using Scalar.AspNetCore;
 
@@ -39,7 +39,7 @@ try
     var connectionString = builder.Configuration.GetConnectionString("InvoiceTrackerDb") ??
                            throw new InvalidOperationException("Connection string 'InvoiceTrackerDb' not found.");
 
-    builder.Services.AddDbContext<InvoiceTrackerDbContext>(options => options.UseSqlServer(connectionString));
+    builder.Services.AddInfrastructure(connectionString);
 
     var app = builder.Build();
 

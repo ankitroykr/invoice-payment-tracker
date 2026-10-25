@@ -32,4 +32,13 @@ public class Result
 
         return new Result(false, error);
     }
+
+    public static Result<TValue> Success<TValue>(TValue value) => new(true, null, value);
+
+    public static Result<TValue> Failure<TValue>(Error error)
+    {
+        ArgumentNullException.ThrowIfNull(error);
+
+        return new Result<TValue>(false, error, default!);
+    }
 }

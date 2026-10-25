@@ -1,10 +1,12 @@
+using InvoiceTracker.Domain.Common;
 using InvoiceTracker.Domain.Customers;
 
 using Microsoft.EntityFrameworkCore;
 
 namespace InvoiceTracker.Infrastructure.Data;
 
-public class InvoiceTrackerDbContext(DbContextOptions<InvoiceTrackerDbContext> options) : DbContext(options)
+public class InvoiceTrackerDbContext(DbContextOptions<InvoiceTrackerDbContext> options)
+    : DbContext(options), IUnitOfWork
 {
     public DbSet<Customer> Customers { get; set; }
 

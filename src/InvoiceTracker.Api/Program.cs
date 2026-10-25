@@ -1,5 +1,5 @@
 using InvoiceTracker.Api;
-using InvoiceTracker.Api.Data;
+using InvoiceTracker.Infrastructure.Data;
 
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;

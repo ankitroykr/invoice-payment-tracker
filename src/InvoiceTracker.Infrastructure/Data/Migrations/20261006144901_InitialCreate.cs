@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace InvoiceTracker.Api.Data.Migrations
+namespace InvoiceTracker.Infrastructure.Data.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration

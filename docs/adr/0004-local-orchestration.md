@@ -4,11 +4,11 @@ date: 2026-10-21
 decision-makers: Ankit Kumar Roy
 ---
 
-# Run SQL Server locally with Docker Compose, moving to .NET Aspire in Phase 2
+# Run SQL Server locally with Docker Compose, moving to .NET Aspire later
 
 ## Context and Problem Statement
 
-Locally, the API needs SQL Server. For now that's the only dependency, but later phases add a worker, Service Bus and an Angular app, and starting all of that by hand won't scale.
+Locally, the API needs SQL Server. For now that's the only dependency, but later the app adds a worker, Service Bus and an Angular app, and starting all of that by hand won't scale.
 
 How should local dependencies be run?
 
@@ -28,7 +28,7 @@ How should local dependencies be run?
 
 ## Decision Outcome
 
-Chosen option: "Docker Compose for SQL Server, API run from the IDE", because one small file covers the one dependency we have. I'll move to .NET Aspire in Phase 2, when there's more to run, and supersede this record.
+Chosen option: "Docker Compose for SQL Server, API run from the IDE", because one small file covers the one dependency we have. I'll move to .NET Aspire when there's more to run, and supersede this record.
 
 * `compose.yaml` runs SQL Server 2022 on port 1433, with a named volume and a health check.
 * The `sa` password lives in a git-ignored `.env` file; `.env.example` shows what to set.

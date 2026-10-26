@@ -32,7 +32,7 @@ Chosen option: "`src/` and `tests/` with one solution at the root", because it's
 * App projects in `src/`, test projects in `tests/`, `InvoiceTracker.sln` at the root.
 * `global.json` pins the SDK and sets Microsoft Testing Platform as the test runner.
 * `.editorconfig` holds shared formatting rules.
-* New projects get added when a feature needs them, starting with a domain project in Phase 2.
+* New projects get added when a feature needs them, starting with a domain project.
 
 ### Consequences
 

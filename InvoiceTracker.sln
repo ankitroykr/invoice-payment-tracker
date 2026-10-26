@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InvoiceTracker.Domain.UnitT
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InvoiceTracker.Infrastructure", "src\InvoiceTracker.Infrastructure\InvoiceTracker.Infrastructure.csproj", "{3F80CD13-DDEF-4A66-88AA-1A2CBCFF4D7C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InvoiceTracker.Application", "src\InvoiceTracker.Application\InvoiceTracker.Application.csproj", "{57CCDC04-A01C-406A-B6F3-98B8A4B8A3E4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -87,6 +89,18 @@ Global
 		{3F80CD13-DDEF-4A66-88AA-1A2CBCFF4D7C}.Release|x64.Build.0 = Release|Any CPU
 		{3F80CD13-DDEF-4A66-88AA-1A2CBCFF4D7C}.Release|x86.ActiveCfg = Release|Any CPU
 		{3F80CD13-DDEF-4A66-88AA-1A2CBCFF4D7C}.Release|x86.Build.0 = Release|Any CPU
+		{57CCDC04-A01C-406A-B6F3-98B8A4B8A3E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{57CCDC04-A01C-406A-B6F3-98B8A4B8A3E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{57CCDC04-A01C-406A-B6F3-98B8A4B8A3E4}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{57CCDC04-A01C-406A-B6F3-98B8A4B8A3E4}.Debug|x64.Build.0 = Debug|Any CPU
+		{57CCDC04-A01C-406A-B6F3-98B8A4B8A3E4}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{57CCDC04-A01C-406A-B6F3-98B8A4B8A3E4}.Debug|x86.Build.0 = Debug|Any CPU
+		{57CCDC04-A01C-406A-B6F3-98B8A4B8A3E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{57CCDC04-A01C-406A-B6F3-98B8A4B8A3E4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{57CCDC04-A01C-406A-B6F3-98B8A4B8A3E4}.Release|x64.ActiveCfg = Release|Any CPU
+		{57CCDC04-A01C-406A-B6F3-98B8A4B8A3E4}.Release|x64.Build.0 = Release|Any CPU
+		{57CCDC04-A01C-406A-B6F3-98B8A4B8A3E4}.Release|x86.ActiveCfg = Release|Any CPU
+		{57CCDC04-A01C-406A-B6F3-98B8A4B8A3E4}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -97,5 +111,6 @@ Global
 		{53298B2F-884B-4117-88F2-E1E9787F159C} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{89E044F3-310A-4098-AED5-486620295DFC} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{3F80CD13-DDEF-4A66-88AA-1A2CBCFF4D7C} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{57CCDC04-A01C-406A-B6F3-98B8A4B8A3E4} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 	EndGlobalSection
 EndGlobal

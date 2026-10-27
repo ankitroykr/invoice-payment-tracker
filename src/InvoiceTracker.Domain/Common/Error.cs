@@ -1,3 +1,5 @@
+using System.Collections.ObjectModel;
+
 namespace InvoiceTracker.Domain.Common;
 
 /// <summary>
@@ -20,7 +22,14 @@ public sealed record Error
     /// </summary>
     public ErrorType Type { get; }
 
-    private Error(string code, string message, ErrorType type)
+    /// <summary>
+    /// Gets a collection of field-specific errors, where the keys represent the field names
+    /// and the values are arrays of associated error messages.
+    /// Empty unless the error was created with field errors.
+    /// </summary>
+    public IReadOnlyDictionary<string, string[]> FieldErrors { get; }
+
+    private Error(string code, string message, ErrorType type, IReadOnlyDictionary<string, string[]> fieldErrors)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(code);
         ArgumentException.ThrowIfNullOrWhiteSpace(message);
@@ -28,6 +37,7 @@ public sealed record Error
         Code = code;
         Message = message;
         Type = type;
+        FieldErrors = fieldErrors;
     }
 
     /// <summary>
@@ -39,7 +49,27 @@ public sealed record Error
     /// <exception cref="ArgumentException">The code or message is null, empty, or whitespace.</exception>
     public static Error Validation(string code, string message)
     {
-        return new Error(code, message, ErrorType.Validation);
+        return new Error(code, message, ErrorType.Validation, ReadOnlyDictionary<string, string[]>.Empty);
+    }
+
+    /// <summary>
+    /// Creates an error for missing or malformed input, with the messages for each invalid field.
+    /// </summary>
+    /// <param name="code">The stable error code.</param>
+    /// <param name="message">The readable error message.</param>
+    /// <param name="fieldErrors">The error messages for each invalid field.</param>
+    /// <exception cref="ArgumentNullException">The code, message, or fieldErrors are null.</exception>
+    /// <exception cref="ArgumentException">The code or message is empty or whitespace, or fieldErrors is empty.</exception>
+    public static Error Validation(string code, string message, IReadOnlyDictionary<string, string[]> fieldErrors)
+    {
+        ArgumentNullException.ThrowIfNull(fieldErrors);
+
+        if (fieldErrors.Count == 0)
+        {
+            throw new ArgumentException("At least one field error must be provided.", nameof(fieldErrors));
+        }
+
+        return new Error(code, message, ErrorType.Validation, fieldErrors);
     }
 
     /// <summary>
@@ -51,7 +81,7 @@ public sealed record Error
     /// <exception cref="ArgumentException">The code or message is null, empty, or whitespace.</exception>
     public static Error NotFound(string code, string message)
     {
-        return new Error(code, message, ErrorType.NotFound);
+        return new Error(code, message, ErrorType.NotFound, ReadOnlyDictionary<string, string[]>.Empty);
     }
 
     /// <summary>
@@ -63,7 +93,7 @@ public sealed record Error
     /// <exception cref="ArgumentException">The code or message is null, empty, or whitespace.</exception>
     public static Error Conflict(string code, string message)
     {
-        return new Error(code, message, ErrorType.Conflict);
+        return new Error(code, message, ErrorType.Conflict, ReadOnlyDictionary<string, string[]>.Empty);
     }
 
     /// <summary>
@@ -75,6 +105,6 @@ public sealed record Error
     /// <exception cref="ArgumentException">The code or message is null, empty, or whitespace.</exception>
     public static Error BusinessRule(string code, string message)
     {
-        return new Error(code, message, ErrorType.BusinessRule);
+        return new Error(code, message, ErrorType.BusinessRule, ReadOnlyDictionary<string, string[]>.Empty);
     }
 }

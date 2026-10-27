@@ -4,6 +4,10 @@ namespace InvoiceTracker.Domain.UnitTests.Common;
 
 public sealed class ErrorTests
 {
+    private const string Code = "code";
+
+    private const string Message = "message";
+
     public static TheoryData<Func<string, string, Error>, ErrorType> ErrorFactories => new()
     {
         { Error.Validation, ErrorType.Validation },
@@ -35,33 +39,64 @@ public sealed class ErrorTests
     [Fact]
     public void Factory_SetsCodeAndMessage_WhenBothAreValid()
     {
-        // Arrange
-        const string code = "code";
-        const string message = "message";
-
         // Act
-        var error = Error.BusinessRule(code, message);
+        var error = Error.BusinessRule(Code, Message);
 
         // Assert
-        Assert.Equal(code, error.Code);
-        Assert.Equal(message, error.Message);
+        Assert.Equal(Code, error.Code);
+        Assert.Equal(Message, error.Message);
     }
 
     [Theory]
     [MemberData(nameof(ErrorFactories))]
-    public void Factory_SetsCodeMessageAndMatchingErrorType_WhenCodeAndMessageAreValid(Func<string, string, Error> errorFactory,
+    public void Factory_SetsCodeMessageAndMatchingErrorType_WhenCodeAndMessageAreValid(
+        Func<string, string, Error> errorFactory,
         ErrorType expectedErrorType)
     {
-        // Arrange
-        const string code = "code";
-        const string message = "message";
-
         // Act
-        var error = errorFactory(code, message);
+        var error = errorFactory(Code, Message);
 
         // Assert
-        Assert.Equal(code, error.Code);
-        Assert.Equal(message, error.Message);
+        Assert.Equal(Code, error.Code);
+        Assert.Equal(Message, error.Message);
         Assert.Equal(expectedErrorType, error.Type);
+    }
+
+    [Fact]
+    public void Factory_SetsEmptyFieldErrors_WhenNoFieldErrorsAreGiven()
+    {
+        // Act
+        var error = Error.Validation(Code, Message);
+
+        // Assert
+        Assert.Empty(error.FieldErrors);
+    }
+
+    [Fact]
+    public void Validation_SetsFieldErrors_WhenFieldErrorsAreGiven()
+    {
+        // Arrange
+        var fieldErrors = new Dictionary<string, string[]> { ["Email"] = ["'Email' is not a valid email address."] };
+
+        // Act
+        var error = Error.Validation(Code, Message, fieldErrors);
+
+        // Assert
+        Assert.Equal(fieldErrors, error.FieldErrors);
+    }
+
+    [Fact]
+    public void Validation_ThrowsArgumentNullException_WhenFieldErrorsIsNull()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => Error.Validation(Code, Message, null!));
+    }
+
+    [Fact]
+    public void Validation_ThrowsArgumentException_WhenFieldErrorsIsEmpty()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() =>
+            Error.Validation(Code, Message, new Dictionary<string, string[]>()));
     }
 }

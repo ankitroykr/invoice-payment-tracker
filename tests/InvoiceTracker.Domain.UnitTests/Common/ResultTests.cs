@@ -20,7 +20,7 @@ public sealed class ResultTests
     public void Failure_ReturnsFailedResultWithError_WhenErrorIsProvided()
     {
         // Arrange
-        var error = new Error("code", "message");
+        var error = Error.Validation("code", "message");
 
         // Act
         var result = Result.Failure(error);

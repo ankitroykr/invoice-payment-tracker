@@ -29,7 +29,8 @@ try
         .ReadFrom.Services(services)
         .Enrich.FromLogContext());
 
-    builder.Services.AddControllers();
+    builder.Services.AddControllers(options =>
+        options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true);
     builder.Services.AddProblemDetails();
     // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
     builder.Services.AddOpenApi();

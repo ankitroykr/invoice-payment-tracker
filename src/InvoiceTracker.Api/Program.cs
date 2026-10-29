@@ -1,4 +1,5 @@
 using InvoiceTracker.Api;
+using InvoiceTracker.Application;
 using InvoiceTracker.Infrastructure;
 using InvoiceTracker.Infrastructure.Data;
 
@@ -39,6 +40,7 @@ try
     var connectionString = builder.Configuration.GetConnectionString("InvoiceTrackerDb") ??
                            throw new InvalidOperationException("Connection string 'InvoiceTrackerDb' not found.");
 
+    builder.Services.AddApplication();
     builder.Services.AddInfrastructure(connectionString);
 
     var app = builder.Build();

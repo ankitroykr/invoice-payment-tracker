@@ -1,7 +1,10 @@
 using InvoiceTracker.Api.IntegrationTests.Infrastructure;
+using InvoiceTracker.Infrastructure.Data;
 
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 using Testcontainers.MsSql;
@@ -21,6 +24,9 @@ public sealed class InvoiceTrackerApiFactory : WebApplicationFactory<Program>, I
     {
         await _msSqlContainer.StartAsync();
         StartServer();
+        await using var scope = Services.CreateAsyncScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<InvoiceTrackerDbContext>();
+        await dbContext.Database.MigrateAsync(TestContext.Current.CancellationToken);
     }
 
     protected override IHost CreateHost(IHostBuilder builder)

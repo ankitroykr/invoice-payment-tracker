@@ -26,7 +26,7 @@ public sealed class ResultOfTTests
         // Arrange
         const string code = "code";
         const string message = "message";
-        var error = new Error(code, message);
+        var error = Error.BusinessRule(code, message);
 
         // Act
         var result = Result.Failure<string>(error);
@@ -41,7 +41,7 @@ public sealed class ResultOfTTests
     public void Value_ThrowsInvalidOperationException_WhenResultIsFailure()
     {
         // Arrange
-        var result = Result.Failure<string>(new Error("code", "message"));
+        var result = Result.Failure<string>(Error.Validation("code", "message"));
 
         // Act & Assert
         Assert.Throws<InvalidOperationException>(() => result.Value);

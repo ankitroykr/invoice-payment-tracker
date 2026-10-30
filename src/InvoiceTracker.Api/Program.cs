@@ -1,4 +1,5 @@
 using InvoiceTracker.Api;
+using InvoiceTracker.Application;
 using InvoiceTracker.Infrastructure;
 using InvoiceTracker.Infrastructure.Data;
 
@@ -28,7 +29,9 @@ try
         .ReadFrom.Services(services)
         .Enrich.FromLogContext());
 
-    builder.Services.AddControllers();
+    builder.Services.AddControllers(options =>
+        options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true);
+    builder.Services.AddRouting(options => options.LowercaseUrls = true);
     builder.Services.AddProblemDetails();
     // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
     builder.Services.AddOpenApi();
@@ -39,6 +42,7 @@ try
     var connectionString = builder.Configuration.GetConnectionString("InvoiceTrackerDb") ??
                            throw new InvalidOperationException("Connection string 'InvoiceTrackerDb' not found.");
 
+    builder.Services.AddApplication();
     builder.Services.AddInfrastructure(connectionString);
 
     var app = builder.Build();

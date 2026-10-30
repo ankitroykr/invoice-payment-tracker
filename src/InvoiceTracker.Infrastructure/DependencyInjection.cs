@@ -1,5 +1,8 @@
+using InvoiceTracker.Application.Customers;
+using InvoiceTracker.Domain.Common;
 using InvoiceTracker.Domain.Customers;
 using InvoiceTracker.Infrastructure.Data;
+using InvoiceTracker.Infrastructure.Data.Queries;
 using InvoiceTracker.Infrastructure.Data.Repositories;
 
 using Microsoft.EntityFrameworkCore;
@@ -19,7 +22,12 @@ public static class DependencyInjection
     {
         services.AddDbContext<InvoiceTrackerDbContext>(options => options.UseSqlServer(connectionString));
 
+        services.AddScoped<IUnitOfWork>(serviceProvider =>
+            serviceProvider.GetRequiredService<InvoiceTrackerDbContext>());
+
         services.AddScoped<ICustomerRepository, CustomerRepository>();
+
+        services.AddScoped<ICustomerQueries, CustomerQueries>();
 
         return services;
     }

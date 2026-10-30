@@ -8,7 +8,7 @@ decision-makers: Ankit Kumar Roy
 
 ## Context and Problem Statement
 
-Phase 2 brings the first business rules. Until now everything sat in the API project, EF Core included. I want the rules separate from the database and the web, and quick to unit test.
+Customers and invoices bring the first business rules. Until now everything sat in the API project, EF Core included. I want the rules separate from the database and the web, and quick to unit test.
 
 How should I split the code into projects?
 
@@ -51,5 +51,5 @@ Chosen option: "Full Clean Architecture", because it's what I see in most enterp
 
 ## More Information
 
-* Builds on ADR 0003, which planned a domain project for Phase 2.
+* Builds on ADR 0003, which planned a separate domain project.
 * https://learn.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/common-web-application-architectures

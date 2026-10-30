@@ -7,11 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\InvoiceTracker.Domain\InvoiceTracker.Domain.csproj"/>
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.13"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.13" />
     <!--
       Overrides the vulnerable System.Security.Cryptography.Pkcs 9.0.11 pulled in transitively by
       Microsoft.Data.SqlClient 6.1.7 (via Microsoft.EntityFrameworkCore.SqlServer).
@@ -19,7 +15,11 @@
       Remove once EF Core depends on a SqlClient release with a patched Pkcs
       (SqlClient 6.1.8 is planned): https://github.com/dotnet/SqlClient/issues/4843
     -->
-    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.13"/>
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.13" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\InvoiceTracker.Application\InvoiceTracker.Application.csproj" />
   </ItemGroup>
 
 </Project>

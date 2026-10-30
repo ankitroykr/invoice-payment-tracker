@@ -8,6 +8,16 @@ namespace InvoiceTracker.Domain.Customers;
 public sealed class Customer : IAggregateRoot
 {
     /// <summary>
+    /// The maximum allowed length for a customer's name.
+    /// </summary>
+    public const int NameMaxLength = 200;
+
+    /// <summary>
+    /// The maximum allowed length for a customer's email address.
+    /// </summary>
+    public const int EmailMaxLength = 254;
+
+    /// <summary>
     /// The customer's identifier. The database assigns it when the customer is saved, so it is 0 on a new customer.
     /// </summary>
     public int Id { get; private set; }

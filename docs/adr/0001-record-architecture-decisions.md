@@ -8,7 +8,7 @@ decision-makers: Ankit Kumar Roy
 
 ## Context and Problem Statement
 
-By the end of Phase 1 I'd made several decisions that shape this project. The code shows what I chose, but not why, or what I turned down. Some of it is in PR descriptions, but I won't find it there in six months.
+By the time the first version of the API was running, I'd made several decisions that shape this project. The code shows what I chose, but not why, or what I turned down. Some of it is in PR descriptions, but I won't find it there in six months.
 
 Where should these decisions be written down?
 
@@ -37,7 +37,7 @@ Chosen option: "MADR 4.0", because it's plain Markdown in the repo and has a sec
 ### Consequences
 
 * Good, because the why sits next to the code and gets reviewed with it.
-* Bad, because it's extra writing, and I've had to write up Phase 1 after the fact.
+* Bad, because it's extra writing, and I've had to write up my first decisions after the fact.
 
 ### Confirmation
 

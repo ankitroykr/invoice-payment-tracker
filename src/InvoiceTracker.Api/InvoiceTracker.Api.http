@@ -1,12 +1,49 @@
 @baseUrl = https://localhost:7160
 
+### Liveness check
+# 200 if the app is up. Runs no checks, so it skips the database.
 GET {{baseUrl}}/health/live
 Accept: application/json
 
-###
+### Readiness check
+# Runs the checks tagged "ready" (the database). 200 if they pass, 503 if not.
 GET {{baseUrl}}/health/ready
 Accept: application/json
 
-###
+### Unknown route
+# 404 ProblemDetails, written by UseStatusCodePages as no endpoint matches.
 GET {{baseUrl}}/does-not-exist
 Accept: application/json
+
+### Create a customer
+# 201 from CreatedAtAction with no body.
+# Saves the Location header as customerLocation (Rider only).
+# In other editors, replace {{customerLocation}} with {{baseUrl}}/api/customers/{id}, using the ID from the Location header.
+POST {{baseUrl}}/api/customers
+Accept: application/json
+Content-Type: application/json
+
+{
+  "name": "Tester Test",
+  "email": "tester@example.com"
+}
+
+> {%
+    client.global.set("customerLocation", response.headers.valueOf("Location"));
+%}
+
+### Get the customer just created
+# Run "Create a customer" first, as it sets customerLocation. 200 with the customer.
+GET {{customerLocation}}
+Accept: application/json
+
+### Create a customer with invalid data
+# 400 ValidationProblemDetails from ApiController.Problem, with errors for Name and Email.
+POST {{baseUrl}}/api/customers
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "",
+  "email": "invalid-email"
+}

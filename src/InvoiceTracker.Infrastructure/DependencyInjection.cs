@@ -1,6 +1,7 @@
 using InvoiceTracker.Application.Customers;
 using InvoiceTracker.Domain.Common;
 using InvoiceTracker.Domain.Customers;
+using InvoiceTracker.Domain.Invoices;
 using InvoiceTracker.Infrastructure.Data;
 using InvoiceTracker.Infrastructure.Data.Queries;
 using InvoiceTracker.Infrastructure.Data.Repositories;
@@ -26,6 +27,7 @@ public static class DependencyInjection
             serviceProvider.GetRequiredService<InvoiceTrackerDbContext>());
 
         services.AddScoped<ICustomerRepository, CustomerRepository>();
+        services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 
         services.AddScoped<ICustomerQueries, CustomerQueries>();
 

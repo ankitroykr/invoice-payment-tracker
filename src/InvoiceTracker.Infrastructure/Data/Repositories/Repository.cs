@@ -11,7 +11,7 @@ public abstract class Repository<T>(InvoiceTrackerDbContext dbContext) : IReposi
         dbContext.Set<T>().Add(entity);
     }
 
-    public async Task<T?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    public virtual async Task<T?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         return await dbContext.Set<T>().FindAsync([id], cancellationToken);
     }

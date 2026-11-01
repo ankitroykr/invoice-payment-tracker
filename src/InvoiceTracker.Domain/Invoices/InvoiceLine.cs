@@ -18,6 +18,11 @@ public sealed class InvoiceLine
     public int Id { get; private set; }
 
     /// <summary>
+    /// The identifier of the invoice the line belongs to.
+    /// </summary>
+    public int InvoiceId { get; private set; }
+
+    /// <summary>
     /// What the line is for, for example, the goods or service supplied.
     /// </summary>
     public string Description { get; private set; }
@@ -36,6 +41,15 @@ public sealed class InvoiceLine
     /// The quantity multiplied by the unit price, in the unit price's currency.
     /// </summary>
     public Money Total => new(Quantity * UnitPrice.Amount, UnitPrice.Currency);
+
+    // EF Core uses this to load lines from the database. It can't pass the Money unit price into a
+    // constructor, so it creates the line empty and sets the properties straight after.
+    // The null! values only keep the compiler quiet until then.
+    private InvoiceLine()
+    {
+        Description = null!;
+        UnitPrice = null!;
+    }
 
     internal InvoiceLine(string description, decimal quantity, Money unitPrice)
     {

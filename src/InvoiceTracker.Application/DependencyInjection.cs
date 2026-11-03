@@ -1,6 +1,7 @@
 using FluentValidation;
 
 using InvoiceTracker.Application.Customers.CreateCustomer;
+using InvoiceTracker.Application.Invoices.CreateInvoice;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -21,6 +22,8 @@ public static class DependencyInjection
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
 
         services.AddScoped<CreateCustomerHandler>();
+
+        services.AddScoped<CreateInvoiceHandler>();
 
         return services;
     }

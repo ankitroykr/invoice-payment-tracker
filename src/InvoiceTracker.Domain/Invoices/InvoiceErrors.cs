@@ -24,4 +24,10 @@ public static class InvoiceErrors
     /// </summary>
     public static readonly Error NotIssued =
         Error.BusinessRule("Invoice.NotIssued", "Only an issued invoice can be voided.");
+
+    /// <summary>
+    /// The customer the invoice is for does not exist, so the invoice cannot be created.
+    /// </summary>
+    public static readonly Error CustomerNotFound =
+        Error.BusinessRule("Invoice.CustomerNotFound", "The customer for this invoice does not exist.");
 }

@@ -30,4 +30,10 @@ public static class InvoiceErrors
     /// </summary>
     public static readonly Error CustomerNotFound =
         Error.BusinessRule("Invoice.CustomerNotFound", "The customer for this invoice does not exist.");
+
+    /// <summary>
+    /// The invoice's currency is not one the app supports, so the invoice cannot be created.
+    /// </summary>
+    public static readonly Error CurrencyNotSupported =
+        Error.BusinessRule("Invoice.CurrencyNotSupported", "The currency for this invoice is not supported.");
 }

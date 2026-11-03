@@ -1,3 +1,4 @@
+using InvoiceTracker.Application.Currencies;
 using InvoiceTracker.Application.Invoices.CreateInvoice;
 using InvoiceTracker.Domain.Common;
 using InvoiceTracker.Domain.Customers;
@@ -13,6 +14,8 @@ public sealed class CreateInvoiceHandlerTests
 
     private const string Currency = "GBP";
 
+    private const string UnsupportedCurrency = "CHF";
+
     private static readonly CreateInvoiceCommand ValidCommand = new(ValidCustomerId, Currency,
     [
         new CreateInvoiceLine("Website redesign", 4m, 55m),
@@ -23,6 +26,8 @@ public sealed class CreateInvoiceHandlerTests
 
     private readonly ICustomerRepository _customerRepository = Substitute.For<ICustomerRepository>();
 
+    private readonly ICurrencyProvider _currencyProvider = Substitute.For<ICurrencyProvider>();
+
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
 
     private readonly CreateInvoiceCommandValidator _createInvoiceCommandValidator = new();
@@ -31,8 +36,11 @@ public sealed class CreateInvoiceHandlerTests
 
     public CreateInvoiceHandlerTests()
     {
+        _currencyProvider.FindAsync(Currency, Arg.Any<CancellationToken>())
+            .Returns(new SupportedCurrency(Currency, 2, "Pound Sterling"));
+
         _handler = new CreateInvoiceHandler(_createInvoiceCommandValidator, _invoiceRepository, _customerRepository,
-            _unitOfWork);
+            _currencyProvider, _unitOfWork);
     }
 
     [Fact]
@@ -95,6 +103,33 @@ public sealed class CreateInvoiceHandlerTests
 
         // Assert
         _invoiceRepository.DidNotReceive().Add(Arg.Any<Invoice>());
+        await _unitOfWork.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task HandleAsync_ReturnsCurrencyNotSupported_WhenCurrencyIsNotSupported()
+    {
+        // Arrange
+        var command = ValidCommand with { Currency = UnsupportedCurrency };
+
+        // Act
+        var result = await _handler.HandleAsync(command, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(InvoiceErrors.CurrencyNotSupported, result.Error);
+    }
+
+    [Fact]
+    public async Task HandleAsync_DoesNotLookUpCustomerOrSave_WhenCurrencyIsNotSupported()
+    {
+        // Arrange
+        var command = ValidCommand with { Currency = UnsupportedCurrency };
+
+        // Act
+        await _handler.HandleAsync(command, TestContext.Current.CancellationToken);
+
+        // Assert
+        await _customerRepository.DidNotReceive().GetByIdAsync(Arg.Any<int>(), Arg.Any<CancellationToken>());
         await _unitOfWork.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 

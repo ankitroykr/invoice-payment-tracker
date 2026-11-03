@@ -17,6 +17,8 @@ public sealed class CreateInvoiceTests(InvoiceTrackerApiFactory factory)
 
     private const string Currency = "GBP";
 
+    private const string UnsupportedCurrency = "CHF";
+
     private const int CustomerIdThatDoesNotExist = int.MaxValue;
 
     [Fact]
@@ -82,6 +84,31 @@ public sealed class CreateInvoiceTests(InvoiceTrackerApiFactory factory)
         Assert.True(problemDetails.Extensions.ContainsKey("traceId"));
         Assert.Equal((int)HttpStatusCode.UnprocessableEntity, problemDetails.Status);
         Assert.Equal("The customer for this invoice does not exist.", problemDetails.Detail);
+    }
+
+    [Fact]
+    public async Task PostInvoice_ReturnsProblemDetails422_WhenCurrencyIsNotSupported()
+    {
+        // Arrange
+        var client = factory.CreateClient();
+        var customerId = await CreateCustomerAsync(client);
+
+        // Act
+        var response = await client.PostAsJsonAsync("api/invoices",
+            new
+            {
+                CustomerId = customerId,
+                Currency = UnsupportedCurrency,
+                Lines = new[] { new { Description = "Sr. Engineer Onsite", Quantity = 4m, UnitPrice = 55m } }
+            },
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        var problemDetails =
+            await response.Content.ReadFromJsonAsync<ProblemDetails>(TestContext.Current.CancellationToken);
+        Assert.NotNull(problemDetails);
+        Assert.Equal("The currency for this invoice is not supported.", problemDetails.Detail);
     }
 
     [Fact]

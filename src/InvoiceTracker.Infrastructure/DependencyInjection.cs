@@ -1,8 +1,10 @@
+using InvoiceTracker.Application.Currencies;
 using InvoiceTracker.Application.Customers;
 using InvoiceTracker.Application.Invoices;
 using InvoiceTracker.Domain.Common;
 using InvoiceTracker.Domain.Customers;
 using InvoiceTracker.Domain.Invoices;
+using InvoiceTracker.Infrastructure.Currencies;
 using InvoiceTracker.Infrastructure.Data;
 using InvoiceTracker.Infrastructure.Data.Queries;
 using InvoiceTracker.Infrastructure.Data.Repositories;
@@ -32,6 +34,9 @@ public static class DependencyInjection
 
         services.AddScoped<ICustomerQueries, CustomerQueries>();
         services.AddScoped<IInvoiceQueries, InvoiceQueries>();
+
+        services.AddHybridCache();
+        services.AddScoped<ICurrencyProvider, CachedCurrencyProvider>();
 
         return services;
     }

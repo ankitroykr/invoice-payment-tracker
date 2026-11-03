@@ -23,6 +23,14 @@ public abstract class ApiController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
-        return Problem(error.Message);
+        var statusCode = error.Type switch
+        {
+            ErrorType.NotFound => StatusCodes.Status404NotFound,
+            ErrorType.Conflict => StatusCodes.Status409Conflict,
+            ErrorType.BusinessRule => StatusCodes.Status422UnprocessableEntity,
+            _ => StatusCodes.Status500InternalServerError
+        };
+
+        return Problem(detail: error.Message, statusCode: statusCode);
     }
 }

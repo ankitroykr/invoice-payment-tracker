@@ -8,6 +8,11 @@ namespace InvoiceTracker.Domain.Common;
 public sealed record Money
 {
     /// <summary>
+    /// The most decimal places any ISO 4217 currency uses.
+    /// </summary>
+    public const int MaxMinorUnits = 4;
+
+    /// <summary>
     /// The amount, which can be negative.
     /// </summary>
     public decimal Amount { get; }
@@ -28,7 +33,7 @@ public sealed record Money
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(currency);
 
-        if (currency.Length != 3 || !currency.All(char.IsAsciiLetterUpper))
+        if (!IsValidCode(currency))
         {
             throw new ArgumentException(
                 $"Currency '{currency}' is not a valid ISO 4217 code; expected 3 uppercase letters such as GBP.",
@@ -45,6 +50,28 @@ public sealed record Money
     /// <param name="currency">A three-letter uppercase ISO 4217 code, for example, GBP.</param>
     /// <returns>A <see cref="Money"/> of 0 in the given currency.</returns>
     public static Money Zero(string currency) => new(0, currency);
+
+    /// <summary>
+    /// Checks whether a currency code has the ISO 4217 format: three uppercase letters, for example, GBP.
+    /// It only checks the format, not whether the currency actually exists.
+    /// </summary>
+    /// <param name="code">The code to check. Null is allowed and returns false.</param>
+    /// <returns><see langword="true"/> if the code is three uppercase letters; otherwise <see langword="false"/>.</returns>
+    public static bool IsValidCode(string? code) => code is { Length: 3 } && code.All(char.IsAsciiLetterUpper);
+
+    /// <summary>
+    /// Rounds the amount to the currency's minor units, with halves rounded away from zero.
+    /// </summary>
+    /// <param name="minorUnits">The number of decimal places the currency uses under ISO 4217, for example, 2 for GBP.</param>
+    /// <returns>A new <see cref="Money"/> with the rounded amount, in the same currency.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">The minor units are below 0 or above 4.</exception>
+    public Money Round(int minorUnits)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(minorUnits);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(minorUnits, MaxMinorUnits);
+
+        return new Money(Math.Round(Amount, minorUnits, MidpointRounding.AwayFromZero), Currency);
+    }
 
     public override string ToString() => string.Create(CultureInfo.InvariantCulture, $"{Amount} {Currency}");
 

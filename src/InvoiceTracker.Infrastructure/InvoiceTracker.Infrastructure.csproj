@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.13" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Hybrid" Version="10.11.0" />
     <!--
       Overrides the vulnerable System.Security.Cryptography.Pkcs 9.0.11 pulled in transitively by
       Microsoft.Data.SqlClient 6.1.7 (via Microsoft.EntityFrameworkCore.SqlServer).

@@ -1,5 +1,7 @@
 using InvoiceTracker.Domain.Common;
+using InvoiceTracker.Domain.Currencies;
 using InvoiceTracker.Domain.Customers;
+using InvoiceTracker.Domain.Invoices;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -9,6 +11,10 @@ public class InvoiceTrackerDbContext(DbContextOptions<InvoiceTrackerDbContext> o
     : DbContext(options), IUnitOfWork
 {
     public DbSet<Customer> Customers { get; set; }
+
+    public DbSet<Invoice> Invoices { get; set; }
+
+    public DbSet<Currency> Currencies { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

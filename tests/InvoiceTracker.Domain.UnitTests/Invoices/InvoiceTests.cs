@@ -9,6 +9,8 @@ public sealed class InvoiceTests
 
     private const string Currency = "GBP";
 
+    private const int MinorUnits = 2;
+
     private static readonly DateOnly IssueDate = new(2026, 11, 1);
 
     private static readonly DateOnly DueDate = new(2026, 12, 1);
@@ -17,11 +19,12 @@ public sealed class InvoiceTests
     public void Create_ReturnsEmptyDraft_WhenCustomerIdAndCurrencyAreValid()
     {
         // Act
-        var invoice = Invoice.Create(CustomerId, Currency);
+        var invoice = Invoice.Create(CustomerId, Currency, MinorUnits);
 
         // Assert
         Assert.Equal(1, invoice.CustomerId);
         Assert.Equal("GBP", invoice.Currency);
+        Assert.Equal(2, invoice.CurrencyMinorUnits);
         Assert.Equal(InvoiceStatus.Draft, invoice.Status);
         Assert.Empty(invoice.Lines);
         Assert.Null(invoice.Number);
@@ -36,7 +39,8 @@ public sealed class InvoiceTests
     public void Create_ThrowsArgumentOutOfRangeException_WhenCustomerIdIsZeroOrNegative(int customerId)
     {
         // Act & Assert
-        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => Invoice.Create(customerId, Currency));
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(
+            () => Invoice.Create(customerId, Currency, MinorUnits));
 
         Assert.Equal(nameof(customerId), exception.ParamName);
     }
@@ -45,7 +49,16 @@ public sealed class InvoiceTests
     public void Create_ThrowsArgumentException_WhenCurrencyIsInvalid()
     {
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => Invoice.Create(CustomerId, "GB"));
+        Assert.Throws<ArgumentException>(() => Invoice.Create(CustomerId, "GB", MinorUnits));
+    }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(5)]
+    public void Create_ThrowsArgumentOutOfRangeException_WhenCurrencyMinorUnitsAreOutOfRange(int currencyMinorUnits)
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() => Invoice.Create(CustomerId, Currency, currencyMinorUnits));
     }
 
     [Fact]
@@ -55,7 +68,7 @@ public sealed class InvoiceTests
         const string description = "Senior Engineer Onsite";
         const decimal quantity = 7.5m;
         var unitPrice = new Money(40m, "GBP");
-        var invoice = Invoice.Create(CustomerId, Currency);
+        var invoice = Invoice.Create(CustomerId, Currency, MinorUnits);
 
         // Act
         var result = invoice.AddLine(description, quantity, unitPrice);
@@ -65,14 +78,14 @@ public sealed class InvoiceTests
         var line = Assert.Single(invoice.Lines);
         Assert.Equal(description, line.Description);
         Assert.Equal(quantity, line.Quantity);
-        Assert.Equal(unitPrice, line.UnitPrice);
+        Assert.Equal(unitPrice.Amount, line.UnitPrice);
     }
 
     [Fact]
     public void AddLine_ThrowsArgumentException_WhenDescriptionIsEmpty()
     {
         // Arrange
-        var invoice = Invoice.Create(CustomerId, Currency);
+        var invoice = Invoice.Create(CustomerId, Currency, MinorUnits);
 
         // Act & Assert
         Assert.Throws<ArgumentException>(() => invoice.AddLine("", 2m, new Money(55m, "GBP")));
@@ -82,7 +95,7 @@ public sealed class InvoiceTests
     public void AddLine_ThrowsArgumentOutOfRangeException_WhenQuantityIsZero()
     {
         // Arrange
-        var invoice = Invoice.Create(CustomerId, Currency);
+        var invoice = Invoice.Create(CustomerId, Currency, MinorUnits);
 
         // Act & Assert
         Assert.Throws<ArgumentOutOfRangeException>(
@@ -93,7 +106,7 @@ public sealed class InvoiceTests
     public void AddLine_ThrowsArgumentOutOfRangeException_WhenUnitPriceIsNegative()
     {
         // Arrange
-        var invoice = Invoice.Create(CustomerId, Currency);
+        var invoice = Invoice.Create(CustomerId, Currency, MinorUnits);
 
         // Act & Assert
         Assert.Throws<ArgumentOutOfRangeException>(
@@ -104,7 +117,7 @@ public sealed class InvoiceTests
     public void AddLine_ThrowsArgumentException_WhenUnitPriceIsInDifferentCurrency()
     {
         // Arrange
-        var invoice = Invoice.Create(CustomerId, Currency);
+        var invoice = Invoice.Create(CustomerId, Currency, MinorUnits);
 
         // Act & Assert
         var exception = Assert.Throws<ArgumentException>(
@@ -129,11 +142,48 @@ public sealed class InvoiceTests
         Assert.Single(invoice.Lines);
     }
 
+    public static TheoryData<string, int, decimal, decimal, decimal> LineRoundingCases => new()
+    {
+        { "GBP", 2, 1m, 0.125m, 0.13m },
+        { "JPY", 0, 2.5m, 100.3m, 251m },
+        { "KWD", 3, 3m, 0.1235m, 0.371m }
+    };
+
+    [Theory]
+    [MemberData(nameof(LineRoundingCases))]
+    public void AddLine_RoundsLineTotalHalfAwayFromZero_ToCurrencyMinorUnits(
+        string currency, int minorUnits, decimal quantity, decimal unitPrice, decimal expectedTotal)
+    {
+        // Arrange
+        var invoice = Invoice.Create(CustomerId, currency, minorUnits);
+
+        // Act
+        invoice.AddLine("Consulting", quantity, new Money(unitPrice, currency));
+
+        // Assert
+        Assert.Equal(expectedTotal, Assert.Single(invoice.Lines).Total);
+    }
+
+    [Fact]
+    public void Total_AddsUpRoundedLineTotals_WhenLinesNeedRounding()
+    {
+        // Arrange
+        var invoice = Invoice.Create(CustomerId, Currency, MinorUnits);
+        invoice.AddLine("Printing, first batch", 1m, new Money(0.125m, Currency));
+        invoice.AddLine("Printing, second batch", 1m, new Money(0.125m, Currency));
+
+        // Act
+        var total = invoice.Total;
+
+        // Assert
+        Assert.Equal(new Money(0.26m, Currency), total);
+    }
+
     [Fact]
     public void Total_AddsUpAllLineTotals_WhenInvoiceHasMoreThanOneLine()
     {
         // Arrange
-        var invoice = Invoice.Create(CustomerId, Currency);
+        var invoice = Invoice.Create(CustomerId, Currency, MinorUnits);
         invoice.AddLine("Frontend development", 7.5m, new Money(40m, "GBP"));
         invoice.AddLine("Domain and SSL renewal", 1m, new Money(99.99m, "GBP"));
 
@@ -165,7 +215,7 @@ public sealed class InvoiceTests
     public void Issue_ReturnsNoLines_WhenDraftHasNoLines()
     {
         // Arrange
-        var invoice = Invoice.Create(CustomerId, Currency);
+        var invoice = Invoice.Create(CustomerId, Currency, MinorUnits);
 
         // Act
         var result = invoice.Issue(1, IssueDate, DueDate);
@@ -250,7 +300,7 @@ public sealed class InvoiceTests
 
     private static Invoice CreateDraftWithLine()
     {
-        var invoice = Invoice.Create(CustomerId, Currency);
+        var invoice = Invoice.Create(CustomerId, Currency, MinorUnits);
         invoice.AddLine("website work exploration", 7.5m, new Money(38m, Currency));
         return invoice;
     }

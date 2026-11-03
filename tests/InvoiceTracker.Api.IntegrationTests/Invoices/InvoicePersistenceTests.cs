@@ -17,6 +17,8 @@ public sealed class InvoicePersistenceTests(InvoiceTrackerApiFactory factory)
 
     private const string Currency = "GBP";
 
+    private const int MinorUnits = 2;
+
     // SQL Server error 547: a statement conflicted with a FOREIGN KEY or CHECK constraint.
     private const int ConstraintViolationErrorNumber = 547;
 
@@ -42,7 +44,7 @@ public sealed class InvoicePersistenceTests(InvoiceTrackerApiFactory factory)
         {
             var invoiceRepository = arrangeScope.ServiceProvider.GetRequiredService<IInvoiceRepository>();
             customerId = await AddCustomerAsync(arrangeScope.ServiceProvider);
-            var invoice = Invoice.Create(customerId, Currency);
+            var invoice = Invoice.Create(customerId, Currency, MinorUnits);
             invoice.AddLine(description, quantity, unitPrice);
             invoice.Issue(1, IssueDate, DueDate);
             invoiceRepository.Add(invoice);
@@ -60,6 +62,7 @@ public sealed class InvoicePersistenceTests(InvoiceTrackerApiFactory factory)
         Assert.NotNull(savedInvoice);
         Assert.Equal(customerId, savedInvoice.CustomerId);
         Assert.Equal("GBP", savedInvoice.Currency);
+        Assert.Equal(2, savedInvoice.CurrencyMinorUnits);
         Assert.Equal(new InvoiceNumber(2090, 1), savedInvoice.Number);
         Assert.Equal(InvoiceStatus.Issued, savedInvoice.Status);
         Assert.Equal(new DateOnly(2090, 1, 15), savedInvoice.IssueDate);
@@ -67,7 +70,8 @@ public sealed class InvoicePersistenceTests(InvoiceTrackerApiFactory factory)
         var line = Assert.Single(savedInvoice.Lines);
         Assert.Equal(description, line.Description);
         Assert.Equal(quantity, line.Quantity);
-        Assert.Equal(unitPrice, line.UnitPrice);
+        Assert.Equal(unitPrice.Amount, line.UnitPrice);
+        Assert.Equal(277.5m, line.Total);
         Assert.Equal(new Money(277.5m, Currency), savedInvoice.Total);
     }
 
@@ -78,12 +82,12 @@ public sealed class InvoicePersistenceTests(InvoiceTrackerApiFactory factory)
         await using var scope = factory.Services.CreateAsyncScope();
         var invoiceRepository = scope.ServiceProvider.GetRequiredService<IInvoiceRepository>();
         var customerId = await AddCustomerAsync(scope.ServiceProvider);
-        var firstInvoice = Invoice.Create(customerId, Currency);
+        var firstInvoice = Invoice.Create(customerId, Currency, MinorUnits);
         firstInvoice.AddLine("Senior Engineer Remote", 1m, new Money(40m, Currency));
         firstInvoice.Issue(2, IssueDate, DueDate);
         invoiceRepository.Add(firstInvoice);
         await invoiceRepository.UnitOfWork.SaveChangesAsync(TestContext.Current.CancellationToken);
-        var secondInvoice = Invoice.Create(customerId, Currency);
+        var secondInvoice = Invoice.Create(customerId, Currency, MinorUnits);
         secondInvoice.AddLine("Senior Engineer Remote", 1m, new Money(35m, Currency));
         secondInvoice.Issue(2, IssueDate, DueDate);
         invoiceRepository.Add(secondInvoice);
@@ -103,8 +107,8 @@ public sealed class InvoicePersistenceTests(InvoiceTrackerApiFactory factory)
         await using var scope = factory.Services.CreateAsyncScope();
         var invoiceRepository = scope.ServiceProvider.GetRequiredService<IInvoiceRepository>();
         var customerId = await AddCustomerAsync(scope.ServiceProvider);
-        var firstDraft = Invoice.Create(customerId, Currency);
-        var secondDraft = Invoice.Create(customerId, Currency);
+        var firstDraft = Invoice.Create(customerId, Currency, MinorUnits);
+        var secondDraft = Invoice.Create(customerId, Currency, MinorUnits);
         invoiceRepository.Add(firstDraft);
         invoiceRepository.Add(secondDraft);
 
@@ -123,7 +127,7 @@ public sealed class InvoicePersistenceTests(InvoiceTrackerApiFactory factory)
         await using var scope = factory.Services.CreateAsyncScope();
         var invoiceRepository = scope.ServiceProvider.GetRequiredService<IInvoiceRepository>();
         var customerId = await AddCustomerAsync(scope.ServiceProvider);
-        invoiceRepository.Add(Invoice.Create(customerId, "JPY"));
+        invoiceRepository.Add(Invoice.Create(customerId, "JPY", 0));
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<DbUpdateException>(() =>

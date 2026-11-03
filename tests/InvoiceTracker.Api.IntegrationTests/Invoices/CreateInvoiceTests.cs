@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net;
 using System.Net.Http.Json;
 
@@ -54,7 +55,8 @@ public sealed class CreateInvoiceTests(InvoiceTrackerApiFactory factory)
         Assert.Equal(Currency, invoice.Currency);
         Assert.Null(invoice.IssueDate);
         Assert.Null(invoice.DueDate);
-        Assert.Equal(220m, invoice.Total);
+        // Decimal equality ignores trailing zeros, so the text checks the currency's decimal places too.
+        Assert.Equal("220.00", invoice.Total.ToString(CultureInfo.InvariantCulture));
         var line = Assert.Single(invoice.Lines);
         Assert.Equal(new InvoiceLineResponse("Website update and redesign", 4m, 55m, 220m), line);
     }

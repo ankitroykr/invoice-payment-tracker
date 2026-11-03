@@ -33,28 +33,29 @@ public sealed class InvoiceLine
     public decimal Quantity { get; private set; }
 
     /// <summary>
-    /// The price of one unit.
+    /// The price of one unit, in the invoice's currency.
     /// </summary>
-    public Money UnitPrice { get; private set; }
+    public decimal UnitPrice { get; private set; }
 
     /// <summary>
-    /// The quantity multiplied by the unit price, in the unit price's currency.
+    /// The quantity multiplied by the unit price, in the invoice's currency, rounded to its minor units with
+    /// halves away from zero. It's worked out once when the line is added and then stored.
     /// </summary>
-    public Money Total => new(Quantity * UnitPrice.Amount, UnitPrice.Currency);
+    public decimal Total { get; private set; }
 
-    // EF Core uses this to load lines from the database. It can't pass the Money unit price into a
-    // constructor, so it creates the line empty and sets the properties straight after.
-    // The null! values only keep the compiler quiet until then.
+    // EF Core uses this to load lines from the database. The other constructor takes a Money and the
+    // currency's minor units, which aren't columns, so EF creates the line empty and sets the properties
+    // straight after. The null! only keeps the compiler quiet until then.
     private InvoiceLine()
     {
         Description = null!;
-        UnitPrice = null!;
     }
 
-    internal InvoiceLine(string description, decimal quantity, Money unitPrice)
+    internal InvoiceLine(string description, decimal quantity, Money unitPrice, int currencyMinorUnits)
     {
         Description = description;
         Quantity = quantity;
-        UnitPrice = unitPrice;
+        UnitPrice = unitPrice.Amount;
+        Total = new Money(quantity * unitPrice.Amount, unitPrice.Currency).Round(currencyMinorUnits).Amount;
     }
 }

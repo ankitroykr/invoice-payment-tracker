@@ -71,6 +71,7 @@ public sealed class CreateInvoiceHandlerTests
         _invoiceRepository.Received(1).Add(Arg.Is<Invoice>(i =>
             i.CustomerId == ValidCustomerId &&
             i.Currency == Currency &&
+            i.CurrencyMinorUnits == 2 &&
             i.Status == InvoiceStatus.Draft &&
             i.Lines.Count == 2 &&
             i.Total == new Money(310m, Currency)));

@@ -25,6 +25,12 @@ public sealed class Invoice : IAggregateRoot
     public string Currency { get; private set; }
 
     /// <summary>
+    /// The number of decimal places the currency uses, copied from the currency when the invoice is created,
+    /// so later changes to the currency don't change this invoice.
+    /// </summary>
+    public int CurrencyMinorUnits { get; private set; }
+
+    /// <summary>
     /// The stage the invoice has reached. A new invoice is a <see cref="InvoiceStatus.Draft"/>.
     /// </summary>
     public InvoiceStatus Status { get; private set; }
@@ -52,12 +58,13 @@ public sealed class Invoice : IAggregateRoot
     /// <summary>
     /// The sum of the line totals, in the invoice's currency. It is 0 when the invoice has no lines.
     /// </summary>
-    public Money Total => _lines.Aggregate(Money.Zero(Currency), (sum, invoiceLine) => sum + invoiceLine.Total);
+    public Money Total => new(_lines.Sum(invoiceLine => invoiceLine.Total), Currency);
 
-    private Invoice(int customerId, string currency)
+    private Invoice(int customerId, string currency, int currencyMinorUnits)
     {
         CustomerId = customerId;
         Currency = currency;
+        CurrencyMinorUnits = currencyMinorUnits;
         Status = InvoiceStatus.Draft;
     }
 
@@ -66,18 +73,23 @@ public sealed class Invoice : IAggregateRoot
     /// </summary>
     /// <param name="customerId">The identifier of the customer the invoice is for, 1 or more.</param>
     /// <param name="currency">A three-letter uppercase ISO 4217 code, for example, GBP.</param>
+    /// <param name="currencyMinorUnits">The number of decimal places the currency uses, from 0 to 4.</param>
     /// <returns>A new draft <see cref="Invoice"/> for the given customer and currency.</returns>
-    /// <exception cref="ArgumentOutOfRangeException">The customer identifier is 0 or less.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// The customer identifier is 0 or less, or the minor units are below 0 or above 4.
+    /// </exception>
     /// <exception cref="ArgumentNullException">The currency is null.</exception>
     /// <exception cref="ArgumentException">
     /// The currency is empty, whitespace, or not three uppercase letters.
     /// </exception>
-    public static Invoice Create(int customerId, string currency)
+    public static Invoice Create(int customerId, string currency, int currencyMinorUnits)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(customerId);
         _ = Money.Zero(currency);
+        ArgumentOutOfRangeException.ThrowIfNegative(currencyMinorUnits);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(currencyMinorUnits, Money.MaxMinorUnits);
 
-        return new Invoice(customerId, currency);
+        return new Invoice(customerId, currency, currencyMinorUnits);
     }
 
     /// <summary>
@@ -115,7 +127,7 @@ public sealed class Invoice : IAggregateRoot
             return Result.Failure(InvoiceErrors.NotDraft);
         }
 
-        _lines.Add(new InvoiceLine(description, quantity, unitPrice));
+        _lines.Add(new InvoiceLine(description, quantity, unitPrice, CurrencyMinorUnits));
 
         return Result.Success();
     }

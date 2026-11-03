@@ -17,18 +17,7 @@ public sealed class InvoiceLineConfiguration : IEntityTypeConfiguration<InvoiceL
             .IsRequired()
             .HasMaxLength(InvoiceLine.DescriptionMaxLength);
         builder.Property(il => il.Quantity).HasPrecision(19, 4);
-
-        builder.ComplexProperty(il => il.UnitPrice, unitPrice =>
-        {
-            unitPrice.Property(up => up.Amount)
-                .HasColumnName("UnitPriceAmount")
-                .HasPrecision(19, 4);
-
-            unitPrice.Property(up => up.Currency)
-                .HasColumnName("UnitPriceCurrency")
-                .HasMaxLength(3)
-                .IsFixedLength()
-                .IsUnicode(false);
-        });
+        builder.Property(il => il.UnitPrice).HasPrecision(19, 4);
+        builder.Property(il => il.Total).HasPrecision(19, 4);
     }
 }

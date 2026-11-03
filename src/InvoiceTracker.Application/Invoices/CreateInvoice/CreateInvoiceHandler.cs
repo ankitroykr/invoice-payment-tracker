@@ -58,7 +58,7 @@ public sealed class CreateInvoiceHandler(
             return Result.Failure<int>(InvoiceErrors.CustomerNotFound);
         }
 
-        var invoice = Invoice.Create(command.CustomerId, command.Currency);
+        var invoice = Invoice.Create(command.CustomerId, command.Currency, currency.MinorUnits);
 
         foreach (var line in command.Lines)
         {

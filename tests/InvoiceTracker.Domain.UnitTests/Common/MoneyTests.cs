@@ -4,6 +4,15 @@ namespace InvoiceTracker.Domain.UnitTests.Common;
 
 public sealed class MoneyTests
 {
+    public static TheoryData<decimal, int, decimal> RoundingCases => new()
+    {
+        { 279.99975m, 2, 280m },
+        { 0.125m, 2, 0.13m },
+        { -0.125m, 2, -0.13m },
+        { 1234.5m, 0, 1235m },
+        { 1.2345m, 3, 1.235m }
+    };
+
     [Fact]
     public void Constructor_SetsAmountAndCurrency_WhenCurrencyIsValid()
     {
@@ -136,5 +145,47 @@ public sealed class MoneyTests
 
         // Act & Assert
         Assert.Throws<InvalidOperationException>(() => moneyOne - moneyTwo);
+    }
+
+    [Theory]
+    [MemberData(nameof(RoundingCases))]
+    public void Round_RoundsHalfAwayFromZero_ToGivenMinorUnits(decimal amount, int minorUnits, decimal expected)
+    {
+        // Arrange
+        var money = new Money(amount, "GBP");
+
+        // Act
+        var rounded = money.Round(minorUnits);
+
+        // Assert
+        Assert.Equal(new Money(expected, "GBP"), rounded);
+    }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(5)]
+    public void Round_ThrowsArgumentOutOfRangeException_WhenMinorUnitsAreOutOfRange(int minorUnits)
+    {
+        // Arrange
+        var money = new Money(10m, "GBP");
+
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() => money.Round(minorUnits));
+    }
+
+    [Theory]
+    [InlineData("GBP", true)]
+    [InlineData("gbp", false)]
+    [InlineData("GB", false)]
+    [InlineData("GBPP", false)]
+    [InlineData("", false)]
+    [InlineData(null, false)]
+    public void IsValidCode_ReturnsTrue_OnlyWhenCodeIsThreeUppercaseLetters(string? code, bool expected)
+    {
+        // Act
+        var isValid = Money.IsValidCode(code);
+
+        // Assert
+        Assert.Equal(expected, isValid);
     }
 }

@@ -1,4 +1,5 @@
 using InvoiceTracker.Application.Customers;
+using InvoiceTracker.Application.Invoices;
 using InvoiceTracker.Domain.Common;
 using InvoiceTracker.Domain.Customers;
 using InvoiceTracker.Domain.Invoices;
@@ -30,6 +31,7 @@ public static class DependencyInjection
         services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 
         services.AddScoped<ICustomerQueries, CustomerQueries>();
+        services.AddScoped<IInvoiceQueries, InvoiceQueries>();
 
         return services;
     }

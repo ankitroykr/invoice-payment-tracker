@@ -17,6 +17,14 @@ public sealed class InvoicePersistenceTests(InvoiceTrackerApiFactory factory)
 
     private const string Currency = "GBP";
 
+    // SQL Server error 547: a statement conflicted with a FOREIGN KEY or CHECK constraint.
+    private const int ConstraintViolationErrorNumber = 547;
+
+    private const string CurrencyForeignKeyName = "FK_Invoices_Currencies_Currency";
+
+    // SQL Server error 2601: a duplicate key row in a unique index.
+    private const int DuplicateKeyErrorNumber = 2601;
+
     private static readonly DateOnly IssueDate = new(2090, 1, 15);
 
     private static readonly DateOnly DueDate = new(2090, 2, 14);
@@ -85,7 +93,7 @@ public sealed class InvoicePersistenceTests(InvoiceTrackerApiFactory factory)
             invoiceRepository.UnitOfWork.SaveChangesAsync(TestContext.Current.CancellationToken));
 
         var sqlException = Assert.IsType<SqlException>(exception.InnerException);
-        Assert.Equal(2601, sqlException.Number);
+        Assert.Equal(DuplicateKeyErrorNumber, sqlException.Number);
     }
 
     [Fact]
@@ -106,6 +114,24 @@ public sealed class InvoicePersistenceTests(InvoiceTrackerApiFactory factory)
         // Assert
         Assert.True(firstDraft.Id > 0);
         Assert.True(secondDraft.Id > 0);
+    }
+
+    [Fact]
+    public async Task SaveChangesAsync_ThrowsDbUpdateException_WhenCurrencyIsNotSupported()
+    {
+        // Arrange
+        await using var scope = factory.Services.CreateAsyncScope();
+        var invoiceRepository = scope.ServiceProvider.GetRequiredService<IInvoiceRepository>();
+        var customerId = await AddCustomerAsync(scope.ServiceProvider);
+        invoiceRepository.Add(Invoice.Create(customerId, "JPY"));
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<DbUpdateException>(() =>
+            invoiceRepository.UnitOfWork.SaveChangesAsync(TestContext.Current.CancellationToken));
+
+        var sqlException = Assert.IsType<SqlException>(exception.InnerException);
+        Assert.Equal(ConstraintViolationErrorNumber, sqlException.Number);
+        Assert.Contains(CurrencyForeignKeyName, sqlException.Message);
     }
 
     private static async Task<int> AddCustomerAsync(IServiceProvider serviceProvider)

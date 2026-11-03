@@ -1,3 +1,4 @@
+using InvoiceTracker.Domain.Currencies;
 using InvoiceTracker.Domain.Customers;
 using InvoiceTracker.Domain.Invoices;
 
@@ -23,6 +24,11 @@ public sealed class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
         builder.HasOne<Customer>()
             .WithMany()
             .HasForeignKey(i => i.CustomerId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne<Currency>()
+            .WithMany()
+            .HasForeignKey(i => i.Currency)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.OwnsOne(i => i.Number, number =>

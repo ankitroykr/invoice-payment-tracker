@@ -23,6 +23,53 @@ namespace InvoiceTracker.Infrastructure.Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("InvoiceTracker.Domain.Currencies.Currency", b =>
+                {
+                    b.Property<string>("Code")
+                        .HasMaxLength(3)
+                        .IsUnicode(false)
+                        .HasColumnType("char(3)")
+                        .IsFixedLength();
+
+                    b.Property<int>("MinorUnits")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Code");
+
+                    b.ToTable("Currencies");
+
+                    b.HasData(
+                        new
+                        {
+                            Code = "EUR",
+                            MinorUnits = 2,
+                            Name = "Euro"
+                        },
+                        new
+                        {
+                            Code = "GBP",
+                            MinorUnits = 2,
+                            Name = "Pound Sterling"
+                        },
+                        new
+                        {
+                            Code = "INR",
+                            MinorUnits = 2,
+                            Name = "Indian Rupee"
+                        },
+                        new
+                        {
+                            Code = "USD",
+                            MinorUnits = 2,
+                            Name = "US Dollar"
+                        });
+                });
+
             modelBuilder.Entity("InvoiceTracker.Domain.Customers.Customer", b =>
                 {
                     b.Property<int>("Id")
@@ -77,6 +124,8 @@ namespace InvoiceTracker.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Currency");
+
                     b.HasIndex("CustomerId");
 
                     b.ToTable("Invoices");
@@ -129,6 +178,12 @@ namespace InvoiceTracker.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("InvoiceTracker.Domain.Invoices.Invoice", b =>
                 {
+                    b.HasOne("InvoiceTracker.Domain.Currencies.Currency", null)
+                        .WithMany()
+                        .HasForeignKey("Currency")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("InvoiceTracker.Domain.Customers.Customer", null)
                         .WithMany()
                         .HasForeignKey("CustomerId")

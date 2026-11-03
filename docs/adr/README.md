@@ -23,3 +23,4 @@ The significant decisions behind this project, one short file each, in [MADR](ht
 | [0017](0017-invoice-numbering.md) | Number invoices per year, assigned on issue | Accepted |
 | [0018](0018-currencies-and-rounding.md) | Support a fixed list of currencies and round to their minor units | Accepted |
 | [0019](0019-caching-reference-data.md) | Cache reference data in memory with HybridCache | Accepted |
+| [0020](0020-currency-once-per-invoice.md) | Store the currency once per invoice | Accepted |

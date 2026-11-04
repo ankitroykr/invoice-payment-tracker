@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: proposed
 date: 2026-10-26
 decision-makers: Ankit Kumar Roy
 ---
@@ -22,6 +22,8 @@ How do I keep tests that write data apart?
 ## Decision Outcome
 
 Chosen option: "Reset the database with Respawn", because every test starts empty and can check exact results.
+
+Deferred until a failing test needs it. For now, each test reads back only the rows it created, by the ID in the `Location` header, so tests don't clash. The first test that checks an exact count or balance adds Respawn, and this record becomes accepted.
 
 * Respawn deletes all rows but keeps the tables and the migrations history.
 * Integration tests run one at a time. Unit tests still run in parallel.

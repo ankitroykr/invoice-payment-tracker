@@ -18,6 +18,8 @@ Accept: application/json
 ### Create a customer
 # 201 from CreatedAtAction with no body.
 # Saves the Location header as customerLocation (Rider only).
+# Also saves the customer's ID, the last part of the Location header, as customerId for the invoice requests (Rider only).
+# In other editors, replace {{customerId}} with that ID.
 # In other editors, replace {{customerLocation}} with {{baseUrl}}/api/customers/{id}, using the ID from the Location header.
 POST {{baseUrl}}/api/customers
 Accept: application/json
@@ -30,6 +32,7 @@ Content-Type: application/json
 
 > {%
     client.global.set("customerLocation", response.headers.valueOf("Location"));
+    client.global.set("customerId", response.headers.valueOf("Location").split("/").pop());
 %}
 
 ### Get the customer just created
@@ -46,4 +49,55 @@ Accept: application/json
 {
   "name": "",
   "email": "invalid-email"
+}
+
+### Create an invoice
+# 201 from CreatedAtAction with no body. Run "Create a customer" first, as it sets customerId.
+# Expected total: 4 × 55 = 220.00, plus 1 × 0.125 rounded to 0.13, so 220.13.
+POST {{baseUrl}}/api/invoices
+Accept: application/json
+Content-Type: application/json
+
+{
+  "customerId": {{customerId}},
+  "currency": "GBP",
+  "lines": [
+    { "description": "Website redesign", "quantity": 4, "unitPrice": 55 },
+    { "description": "Printing", "quantity": 1, "unitPrice": 0.125 }
+  ]
+}
+
+> {%
+    client.global.set("invoiceLocation", response.headers.valueOf("Location"));
+%}
+
+### Get the invoice just created
+# Run "Create an invoice" first, as it sets invoiceLocation. 200 with the invoice, its lines and total.
+GET {{invoiceLocation}}
+Accept: application/json
+
+### Create an invoice with an unsupported currency
+# 422 Problem Details: a business rule (Invoice.CurrencyNotSupported), as XYZ is a valid code format but not a supported currency.
+POST {{baseUrl}}/api/invoices
+Accept: application/json
+Content-Type: application/json
+
+{
+  "customerId": {{customerId}},
+  "currency": "XYZ",
+  "lines": [
+    { "description": "Website redesign", "quantity": 1, "unitPrice": 100 }
+  ]
+}
+
+### Create an invoice with invalid data
+# 400 ValidationProblemDetails, with errors for CustomerId, Currency and Lines.
+POST {{baseUrl}}/api/invoices
+Accept: application/json
+Content-Type: application/json
+
+{
+  "customerId": 0,
+  "currency": "",
+  "lines": []
 }

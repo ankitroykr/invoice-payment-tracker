@@ -18,7 +18,7 @@ The significant decisions behind this project, one short file each, in [MADR](ht
 | [0012](0012-request-validation.md) | Validate requests with FluentValidation in the Application layer | Accepted |
 | [0013](0013-plain-command-handlers.md) | Call use cases through plain command handlers | Accepted |
 | [0014](0014-query-side.md) | Read data through query interfaces, using EF Core first | Accepted |
-| [0015](0015-test-data-isolation.md) | Reset the test database with Respawn before each integration test | Accepted |
+| [0015](0015-test-data-isolation.md) | Reset the test database with Respawn before each integration test | Proposed |
 | [0016](0016-error-to-problem-details.md) | Map errors to Problem Details by error type | Accepted |
 | [0017](0017-invoice-numbering.md) | Number invoices per year, assigned on issue | Accepted |
 | [0018](0018-currencies-and-rounding.md) | Support a fixed list of currencies and round to their minor units | Accepted |

@@ -15,7 +15,8 @@ public sealed class InvoicesController(CreateInvoiceHandler createInvoiceHandler
     : ApiController
 {
     // No <param> for cancellationToken: .NET 10 shows its text as the request body's description
-    // (https://github.com/dotnet/aspnetcore/issues/65805). Add it back on .NET 11, which has the fix.
+    // (https://github.com/dotnet/aspnetcore/issues/65805). Put it back once the .NET version this
+    // project runs on includes the fix.
     /// <summary>
     /// Creates a draft invoice with its lines.
     /// </summary>

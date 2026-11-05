@@ -1,7 +1,9 @@
 using InvoiceTracker.Api.Common;
+using InvoiceTracker.Api.Security;
 using InvoiceTracker.Application.Invoices;
 using InvoiceTracker.Application.Invoices.CreateInvoice;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InvoiceTracker.Api.Invoices;
@@ -32,6 +34,7 @@ public sealed class InvoicesController(CreateInvoiceHandler createInvoiceHandler
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest, "application/problem+json")]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status422UnprocessableEntity, "application/problem+json")]
+    [Authorize(Policy = Policies.CanWrite)]
     public async Task<ActionResult> CreateInvoice(CreateInvoiceRequest request, CancellationToken cancellationToken)
     {
         var command = request.ToCommand();
@@ -56,6 +59,7 @@ public sealed class InvoicesController(CreateInvoiceHandler createInvoiceHandler
     [HttpGet("{id:int}")]
     [ProducesResponseType<InvoiceResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound, "application/problem+json")]
+    [Authorize(Policy = Policies.CanRead)]
     public async Task<ActionResult<InvoiceResponse>> GetInvoice(int id, CancellationToken cancellationToken)
     {
         var invoice = await invoiceQueries.GetInvoiceByIdAsync(id, cancellationToken);

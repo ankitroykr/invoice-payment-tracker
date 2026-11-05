@@ -1,7 +1,9 @@
 using InvoiceTracker.Api.Common;
+using InvoiceTracker.Api.Security;
 using InvoiceTracker.Application.Customers;
 using InvoiceTracker.Application.Customers.CreateCustomer;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InvoiceTracker.Api.Customers;
@@ -26,6 +28,7 @@ public sealed class CustomersController(CreateCustomerHandler createCustomerHand
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest, "application/problem+json")]
+    [Authorize(Policy = Policies.CanWrite)]
     public async Task<ActionResult> CreateCustomer(CreateCustomerRequest request, CancellationToken cancellationToken)
     {
         var result = await createCustomerHandler.HandleAsync(request.ToCommand(), cancellationToken);
@@ -48,6 +51,7 @@ public sealed class CustomersController(CreateCustomerHandler createCustomerHand
     [HttpGet("{id:int}")]
     [ProducesResponseType<CustomerResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound, "application/problem+json")]
+    [Authorize(Policy = Policies.CanRead)]
     public async Task<ActionResult<CustomerResponse>> GetCustomer(int id, CancellationToken cancellationToken)
     {
         var customer = await customerQueries.GetCustomerByIdAsync(id, cancellationToken);

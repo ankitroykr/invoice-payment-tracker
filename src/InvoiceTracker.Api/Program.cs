@@ -1,10 +1,10 @@
 using InvoiceTracker.Api;
+using InvoiceTracker.Api.Security;
 using InvoiceTracker.Application;
 using InvoiceTracker.Infrastructure;
 using InvoiceTracker.Infrastructure.Data;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
 using Scalar.AspNetCore;
@@ -48,10 +48,16 @@ try
     builder.Services.AddInfrastructure(connectionString);
 
     builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-        .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme);
+        .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+        {
+            options.MapInboundClaims = false;
+            options.TokenValidationParameters.RoleClaimType = "roles";
+        });
 
     builder.Services.AddAuthorizationBuilder()
-        .AddFallbackPolicy("RequireAuthenticatedUser", policy => policy.RequireAuthenticatedUser());
+        .AddFallbackPolicy("RequireAuthenticatedUser", policy => policy.RequireAuthenticatedUser())
+        .AddPolicy(Policies.CanRead, policy => policy.RequireRole(AppRoles.Read, AppRoles.ReadWrite))
+        .AddPolicy(Policies.CanWrite, policy => policy.RequireRole(AppRoles.ReadWrite));
 
     var app = builder.Build();
 

@@ -70,22 +70,33 @@ public sealed class InvoiceTrackerApiFactory : WebApplicationFactory<Program>, I
 
     public HttpClient CreateAuthenticatedClient(params string[] roles)
     {
-        var tokenDescriptor = new SecurityTokenDescriptor
-        {
-            Issuer = TestIssuer,
-            Audience = TestAudience,
-            Expires = DateTime.UtcNow.AddMinutes(5),
-            SigningCredentials = new SigningCredentials(_signingKey, SecurityAlgorithms.HmacSha512),
-            Claims = new Dictionary<string, object> { ["roles"] = roles }
-        };
-
-        var token = new JsonWebTokenHandler().CreateToken(tokenDescriptor);
+        var token = CreateToken(roles);
 
         var client = CreateClient();
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue(JwtBearerDefaults.AuthenticationScheme, token);
 
         return client;
+    }
+
+    public string CreateToken(string[]? roles = null, string audience = TestAudience, DateTime? expires = null,
+        SecurityKey? signingKey = null)
+    {
+        var expiresAt = expires ?? DateTime.UtcNow.AddMinutes(5);
+
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Issuer = TestIssuer,
+            Audience = audience,
+            IssuedAt = expiresAt.AddMinutes(-10),
+            NotBefore = expiresAt.AddMinutes(-10),
+            Expires = expiresAt,
+            SigningCredentials = new SigningCredentials(signingKey ?? _signingKey, SecurityAlgorithms.HmacSha512),
+            Claims = new Dictionary<string, object> { ["roles"] = roles ?? [] }
+        };
+
+        var token = new JsonWebTokenHandler().CreateToken(tokenDescriptor);
+        return token;
     }
 
     public override async ValueTask DisposeAsync()

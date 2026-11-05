@@ -1,11 +1,19 @@
+using System.Net.Http.Headers;
+using System.Security.Cryptography;
+
 using InvoiceTracker.Api.IntegrationTests.Infrastructure;
 using InvoiceTracker.Infrastructure.Data;
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.IdentityModel.Tokens;
 
 using Testcontainers.MsSql;
 
@@ -19,6 +27,11 @@ public sealed class InvoiceTrackerApiFactory : WebApplicationFactory<Program>, I
     private readonly MsSqlContainer _msSqlContainer =
         new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-CU27-ubuntu-22.04")
             .Build();
+
+    private const string TestIssuer = "https://invoicetracker.tests";
+    private const string TestAudience = "api://invoicetracker-tests";
+
+    private readonly SymmetricSecurityKey _signingKey = new(RandomNumberGenerator.GetBytes(64));
 
     public async ValueTask InitializeAsync()
     {
@@ -40,6 +53,39 @@ public sealed class InvoiceTrackerApiFactory : WebApplicationFactory<Program>, I
         });
 
         return base.CreateHost(builder);
+    }
+
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    {
+        builder.ConfigureTestServices(services =>
+            services.PostConfigure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
+            {
+                options.TokenValidationParameters.ValidIssuer = TestIssuer;
+                options.TokenValidationParameters.ValidAudience = TestAudience;
+                options.TokenValidationParameters.IssuerSigningKey = _signingKey;
+            }));
+
+        base.ConfigureWebHost(builder);
+    }
+
+    public HttpClient CreateAuthenticatedClient(params string[] roles)
+    {
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Issuer = TestIssuer,
+            Audience = TestAudience,
+            Expires = DateTime.UtcNow.AddMinutes(5),
+            SigningCredentials = new SigningCredentials(_signingKey, SecurityAlgorithms.HmacSha512),
+            Claims = new Dictionary<string, object> { ["roles"] = roles }
+        };
+
+        var token = new JsonWebTokenHandler().CreateToken(tokenDescriptor);
+
+        var client = CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue(JwtBearerDefaults.AuthenticationScheme, token);
+
+        return client;
     }
 
     public override async ValueTask DisposeAsync()

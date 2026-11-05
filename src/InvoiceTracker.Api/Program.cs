@@ -3,6 +3,8 @@ using InvoiceTracker.Application;
 using InvoiceTracker.Infrastructure;
 using InvoiceTracker.Infrastructure.Data;
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
 using Scalar.AspNetCore;
@@ -45,6 +47,12 @@ try
     builder.Services.AddApplication();
     builder.Services.AddInfrastructure(connectionString);
 
+    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme);
+
+    builder.Services.AddAuthorizationBuilder()
+        .AddFallbackPolicy("RequireAuthenticatedUser", policy => policy.RequireAuthenticatedUser());
+
     var app = builder.Build();
 
     // Configure the HTTP request pipeline.
@@ -56,25 +64,27 @@ try
     if (app.Environment.IsDevelopment())
     {
         app.UseDeveloperExceptionPage();
-        app.MapOpenApi();
-        app.MapScalarApiReference();
+        app.MapOpenApi().AllowAnonymous();
+        app.MapScalarApiReference().AllowAnonymous();
     }
 
     app.UseHttpsRedirection();
 
+    app.UseAuthentication();
     app.UseAuthorization();
 
     app.MapControllers();
 
     app.MapHealthChecks("/health/live",
-        new HealthCheckOptions { Predicate = _ => false, ResponseWriter = HealthCheckResponseWriter.WriteResponse });
+            new HealthCheckOptions { Predicate = _ => false, ResponseWriter = HealthCheckResponseWriter.WriteResponse })
+        .AllowAnonymous();
 
     app.MapHealthChecks("/health/ready",
         new HealthCheckOptions
         {
             Predicate = healthCheck => healthCheck.Tags.Contains("ready"),
             ResponseWriter = HealthCheckResponseWriter.WriteResponse
-        });
+        }).AllowAnonymous();
 
     app.Run();
 }

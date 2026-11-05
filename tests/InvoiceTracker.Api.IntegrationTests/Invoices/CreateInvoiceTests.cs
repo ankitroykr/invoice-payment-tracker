@@ -26,7 +26,7 @@ public sealed class CreateInvoiceTests(InvoiceTrackerApiFactory factory)
     public async Task PostInvoice_Returns201WithNewInvoiceLocation_WhenRequestIsValid()
     {
         // Arrange
-        var client = factory.CreateClient();
+        var client = factory.CreateAuthenticatedClient();
         var customerId = await CreateCustomerAsync(client);
 
         // Act
@@ -65,7 +65,7 @@ public sealed class CreateInvoiceTests(InvoiceTrackerApiFactory factory)
     public async Task PostInvoice_ReturnsProblemDetails422_WhenCustomerDoesNotExist()
     {
         // Arrange
-        var client = factory.CreateClient();
+        var client = factory.CreateAuthenticatedClient();
 
         // Act
         var response = await client.PostAsJsonAsync("api/invoices",
@@ -92,7 +92,7 @@ public sealed class CreateInvoiceTests(InvoiceTrackerApiFactory factory)
     public async Task PostInvoice_ReturnsProblemDetails422_WhenCurrencyIsNotSupported()
     {
         // Arrange
-        var client = factory.CreateClient();
+        var client = factory.CreateAuthenticatedClient();
         var customerId = await CreateCustomerAsync(client);
 
         // Act
@@ -117,7 +117,7 @@ public sealed class CreateInvoiceTests(InvoiceTrackerApiFactory factory)
     public async Task PostInvoice_ReturnsValidationProblem400_WhenInvoiceHasNoLines()
     {
         // Arrange
-        var client = factory.CreateClient();
+        var client = factory.CreateAuthenticatedClient();
         var customerId = await CreateCustomerAsync(client);
 
         // Act

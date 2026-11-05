@@ -15,7 +15,7 @@ public sealed class GetInvoiceTests(InvoiceTrackerApiFactory factory)
     public async Task GetInvoice_ReturnsProblemDetails404_WhenInvoiceDoesNotExist()
     {
         // Arrange
-        var client = factory.CreateClient();
+        var client = factory.CreateAuthenticatedClient();
 
         // Act
         var response = await client.GetAsync($"api/invoices/{InvoiceIdThatDoesNotExist}",

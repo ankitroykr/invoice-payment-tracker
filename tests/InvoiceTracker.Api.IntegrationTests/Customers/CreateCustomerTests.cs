@@ -20,7 +20,7 @@ public sealed class CreateCustomerTests(InvoiceTrackerApiFactory factory)
     public async Task PostCustomer_ReturnsValidationProblem400_WhenCustomerNameIsMissingOrEmpty(string? customerName)
     {
         // Arrange
-        var client = factory.CreateClient();
+        var client = factory.CreateAuthenticatedClient();
 
         // Act
         var response = await client.PostAsJsonAsync("api/customers",
@@ -41,7 +41,7 @@ public sealed class CreateCustomerTests(InvoiceTrackerApiFactory factory)
     public async Task PostCustomer_Returns201WithNewCustomerLocation_WhenRequestIsValid()
     {
         // Arrange
-        var client = factory.CreateClient();
+        var client = factory.CreateAuthenticatedClient();
 
         // Act
         var response = await client.PostAsJsonAsync("api/customers",

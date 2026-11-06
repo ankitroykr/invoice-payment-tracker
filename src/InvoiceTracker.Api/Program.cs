@@ -65,7 +65,7 @@ try
     app.UseExceptionHandler();
     app.UseStatusCodePages();
 
-    app.UseSerilogRequestLogging();
+    app.UseSerilogRequestLogging(options => options.EnrichDiagnosticContext = CallerLogEnricher.Enrich);
 
     if (app.Environment.IsDevelopment())
     {

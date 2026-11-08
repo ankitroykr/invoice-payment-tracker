@@ -36,7 +36,7 @@ try
     builder.Services.AddRouting(options => options.LowercaseUrls = true);
     builder.Services.AddProblemDetails();
     // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-    builder.Services.AddOpenApi();
+    builder.Services.AddOpenApi(options => options.AddDocumentTransformer<BearerSecuritySchemeTransformer>());
 
     builder.Services.AddHealthChecks()
         .AddDbContextCheck<InvoiceTrackerDbContext>(name: "database", tags: ["ready"]);

@@ -7,10 +7,10 @@ namespace InvoiceTracker.Api.IntegrationTests.OpenApi;
 public sealed class OpenApiDocumentTests(InvoiceTrackerApiFactory factory)
 {
     [Theory]
-    [InlineData("/api/customers", "post", new[] { "201", "400" })]
-    [InlineData("/api/customers/{id}", "get", new[] { "200", "404" })]
-    [InlineData("/api/invoices", "post", new[] { "201", "400", "422" })]
-    [InlineData("/api/invoices/{id}", "get", new[] { "200", "404" })]
+    [InlineData("/api/customers", "post", new[] { "201", "400", "401", "403" })]
+    [InlineData("/api/customers/{id}", "get", new[] { "200", "401", "403", "404" })]
+    [InlineData("/api/invoices", "post", new[] { "201", "400", "401", "403", "422" })]
+    [InlineData("/api/invoices/{id}", "get", new[] { "200", "401", "403", "404" })]
     public async Task OpenApiDocument_DocumentsEndpoint_WithSummaryAndStatusCodes(
         string path, string method, string[] expectedStatusCodes)
     {

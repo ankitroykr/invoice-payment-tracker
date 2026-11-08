@@ -29,10 +29,14 @@ public sealed class InvoicesController(CreateInvoiceHandler createInvoiceHandler
     /// <param name="request">The customer, the currency and at least one line.</param>
     /// <response code="201">The draft invoice was created. The Location header points to it.</response>
     /// <response code="400">The request is invalid. The problems are listed for each field.</response>
+    /// <response code="401">There is no access token, or it is invalid or expired.</response>
+    /// <response code="403">The token doesn't have the InvoiceTracker.ReadWrite role.</response>
     /// <response code="422">The customer doesn't exist, or the currency isn't supported.</response>
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest, "application/problem+json")]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized, "application/problem+json")]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden, "application/problem+json")]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status422UnprocessableEntity, "application/problem+json")]
     [Authorize(Policy = Policies.CanWrite)]
     public async Task<ActionResult> CreateInvoice(CreateInvoiceRequest request, CancellationToken cancellationToken)
@@ -55,9 +59,13 @@ public sealed class InvoicesController(CreateInvoiceHandler createInvoiceHandler
     /// <param name="id">The invoice's identifier.</param>
     /// <param name="cancellationToken">A token to cancel the request.</param>
     /// <response code="200">The invoice with its status, number, dates, total and lines.</response>
+    /// <response code="401">There is no access token, or it is invalid or expired.</response>
+    /// <response code="403">The token doesn't have the InvoiceTracker.Read or InvoiceTracker.ReadWrite role.</response>
     /// <response code="404">There is no invoice with that identifier.</response>
     [HttpGet("{id:int}")]
     [ProducesResponseType<InvoiceResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized, "application/problem+json")]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden, "application/problem+json")]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound, "application/problem+json")]
     [Authorize(Policy = Policies.CanRead)]
     public async Task<ActionResult<InvoiceResponse>> GetInvoice(int id, CancellationToken cancellationToken)

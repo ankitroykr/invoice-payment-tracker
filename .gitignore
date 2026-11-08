@@ -431,5 +431,8 @@ FodyWeavers.xsd
 # Rider workspace files
 **/.idea/
 
+# HTTP Client private environment (tokens and other secrets)
+http-client.private.env.json
+
 # macOS metadata
 .DS_Store

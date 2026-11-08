@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 
 using InvoiceTracker.Api.IntegrationTests.Infrastructure;
+using InvoiceTracker.Api.Security;
 
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,7 +16,7 @@ public sealed class GetInvoiceTests(InvoiceTrackerApiFactory factory)
     public async Task GetInvoice_ReturnsProblemDetails404_WhenInvoiceDoesNotExist()
     {
         // Arrange
-        var client = factory.CreateClient();
+        var client = factory.CreateAuthenticatedClient(AppRoles.Read);
 
         // Act
         var response = await client.GetAsync($"api/invoices/{InvoiceIdThatDoesNotExist}",

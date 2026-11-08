@@ -13,7 +13,7 @@ public class ProblemDetailsTests(InvoiceTrackerApiFactory factory)
     public async Task GetUnknownRoute_ReturnsProblemDetails404()
     {
         // Arrange
-        var client = factory.CreateClient();
+        var client = factory.CreateAuthenticatedClient();
 
         // Act
         var response = await client.GetAsync("/unknown", TestContext.Current.CancellationToken);

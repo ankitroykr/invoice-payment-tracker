@@ -1,5 +1,9 @@
 @baseUrl = https://localhost:7160
 
+# The API endpoints need a bearer token. readToken has the InvoiceTracker.Read role and writeToken has
+# InvoiceTracker.ReadWrite. Both come from http-client.private.env.json, which git ignores, under the
+# "dev" environment.
+
 ### Liveness check
 # 200 if the app is up. Runs no checks, so it skips the database.
 GET {{baseUrl}}/health/live
@@ -12,7 +16,9 @@ Accept: application/json
 
 ### Unknown route
 # 404 ProblemDetails, written by UseStatusCodePages as no endpoint matches.
+# Needs a token: the fallback policy covers unknown routes too, so without one the API returns 401.
 GET {{baseUrl}}/does-not-exist
+Authorization: Bearer {{readToken}}
 Accept: application/json
 
 ### Create a customer
@@ -22,6 +28,7 @@ Accept: application/json
 # In other editors, replace {{customerId}} with that ID.
 # In other editors, replace {{customerLocation}} with {{baseUrl}}/api/customers/{id}, using the ID from the Location header.
 POST {{baseUrl}}/api/customers
+Authorization: Bearer {{writeToken}}
 Accept: application/json
 Content-Type: application/json
 
@@ -38,11 +45,30 @@ Content-Type: application/json
 ### Get the customer just created
 # Run "Create a customer" first, as it sets customerLocation. 200 with the customer.
 GET {{customerLocation}}
+Authorization: Bearer {{readToken}}
 Accept: application/json
+
+### Get a customer without a token
+# 401 with a WWW-Authenticate: Bearer header, as the request has no token.
+GET {{baseUrl}}/api/customers/1
+Accept: application/json
+
+### Create a customer with the read role only
+# 403, as the CanWrite policy needs the InvoiceTracker.ReadWrite role.
+POST {{baseUrl}}/api/customers
+Authorization: Bearer {{readToken}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "name": "Reader Test",
+  "email": "reader@example.com"
+}
 
 ### Create a customer with invalid data
 # 400 ValidationProblemDetails from ApiController.Problem, with errors for Name and Email.
 POST {{baseUrl}}/api/customers
+Authorization: Bearer {{writeToken}}
 Content-Type: application/json
 Accept: application/json
 
@@ -55,6 +81,7 @@ Accept: application/json
 # 201 from CreatedAtAction with no body. Run "Create a customer" first, as it sets customerId.
 # Expected total: 4 × 55 = 220.00, plus 1 × 0.125 rounded to 0.13, so 220.13.
 POST {{baseUrl}}/api/invoices
+Authorization: Bearer {{writeToken}}
 Accept: application/json
 Content-Type: application/json
 
@@ -74,11 +101,13 @@ Content-Type: application/json
 ### Get the invoice just created
 # Run "Create an invoice" first, as it sets invoiceLocation. 200 with the invoice, its lines and total.
 GET {{invoiceLocation}}
+Authorization: Bearer {{readToken}}
 Accept: application/json
 
 ### Create an invoice with an unsupported currency
 # 422 Problem Details: a business rule (Invoice.CurrencyNotSupported), as XYZ is a valid code format but not a supported currency.
 POST {{baseUrl}}/api/invoices
+Authorization: Bearer {{writeToken}}
 Accept: application/json
 Content-Type: application/json
 
@@ -93,6 +122,7 @@ Content-Type: application/json
 ### Create an invoice with invalid data
 # 400 ValidationProblemDetails, with errors for CustomerId, Currency and Lines.
 POST {{baseUrl}}/api/invoices
+Authorization: Bearer {{writeToken}}
 Accept: application/json
 Content-Type: application/json
 

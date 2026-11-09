@@ -24,7 +24,8 @@ public static class DependencyInjection
     /// <returns>The same service collection, for chaining.</returns>
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, string connectionString)
     {
-        services.AddDbContext<InvoiceTrackerDbContext>(options => options.UseSqlServer(connectionString));
+        services.AddDbContext<InvoiceTrackerDbContext>(options =>
+            options.UseSqlServer(connectionString, sqlServerOptions => sqlServerOptions.EnableRetryOnFailure()));
 
         services.AddScoped<IUnitOfWork>(serviceProvider =>
             serviceProvider.GetRequiredService<InvoiceTrackerDbContext>());

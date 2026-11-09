@@ -1,0 +1,100 @@
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: [ CI ]
+    types: [ completed ]
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  AZURE_RESOURCE_GROUP: rg-invoicepaymenttracker-prod-uksouth
+  AZURE_WEBAPP_NAME: app-invoicepaymenttracker-prod-uksouth
+  AZURE_SQL_SERVER: sql-invoicepaymenttracker-prod-uksouth
+
+jobs:
+  deploy:
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ steps.deploy.outputs.webapp-url }}
+    env:
+      ConnectionStrings__InvoiceTrackerDb: Server=tcp:sql-invoicepaymenttracker-prod-uksouth.database.windows.net,1433;Database=sqldb-invoicepaymenttracker-prod;Authentication=Active Directory Default;Encrypt=True
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          persist-credentials: false
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - name: Restore tools
+        run: dotnet tool restore
+
+      - name: Publish the API
+        run: dotnet publish src/InvoiceTracker.Api --configuration Release --output ${{ runner.temp }}/app
+
+      - name: Build the migration bundle
+        run: >
+          dotnet ef migrations bundle
+          --project src/InvoiceTracker.Infrastructure
+          --startup-project src/InvoiceTracker.Api
+          --configuration Release
+          --output ${{ runner.temp }}/efbundle
+
+      - name: Sign in to Azure
+        uses: azure/login@v3
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Allow the runner through the SQL firewall
+        id: firewall
+        run: |
+          runner_ip=$(curl --fail --silent --show-error https://api.ipify.org)
+          az sql server firewall-rule create \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --server "$AZURE_SQL_SERVER" \
+            --name "github-run-${{ github.run_id }}" \
+            --start-ip-address "$runner_ip" \
+            --end-ip-address "$runner_ip"
+
+      - name: Apply the migrations
+        run: ${{ runner.temp }}/efbundle --connection "$ConnectionStrings__InvoiceTrackerDb"
+
+      - name: Remove the runner from the SQL firewall
+        if: always() && steps.firewall.conclusion == 'success'
+        run: |
+          az sql server firewall-rule delete \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --server "$AZURE_SQL_SERVER" \
+            --name "github-run-${{ github.run_id }}"
+
+      - name: Deploy to App Service
+        id: deploy
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          package: ${{ runner.temp }}/app
+
+      - name: Check the live app is ready
+        run: >
+          curl --fail --silent --show-error
+          --retry 10 --retry-delay 15 --retry-all-errors
+          "${{ steps.deploy.outputs.webapp-url }}/health/ready"

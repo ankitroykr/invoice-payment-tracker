@@ -17,6 +17,8 @@ public sealed class InvoicePersistenceTests(InvoiceTrackerApiFactory factory)
 
     private const string Currency = "GBP";
 
+    private const string UnsupportedCurrency = "CHF";
+
     private const int MinorUnits = 2;
 
     // SQL Server error 547: a statement conflicted with a FOREIGN KEY or CHECK constraint.
@@ -127,7 +129,7 @@ public sealed class InvoicePersistenceTests(InvoiceTrackerApiFactory factory)
         await using var scope = factory.Services.CreateAsyncScope();
         var invoiceRepository = scope.ServiceProvider.GetRequiredService<IInvoiceRepository>();
         var customerId = await AddCustomerAsync(scope.ServiceProvider);
-        invoiceRepository.Add(Invoice.Create(customerId, "JPY", 0));
+        invoiceRepository.Add(Invoice.Create(customerId, UnsupportedCurrency, MinorUnits));
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<DbUpdateException>(() =>

@@ -48,24 +48,13 @@ public sealed class Currency
     /// <exception cref="ArgumentOutOfRangeException">The minor units are below 0 or above 4.</exception>
     public static Currency Create(string code, int minorUnits, string name)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(code);
-
-        if (!Money.IsValidCode(code))
-        {
-            throw new ArgumentException(
-                $"Currency code '{code}' is not a valid ISO 4217 code; expected 3 uppercase letters such as GBP.",
-                nameof(code));
-        }
-
+        Money.ThrowIfInvalidCode(code);
         ArgumentOutOfRangeException.ThrowIfNegative(minorUnits);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(minorUnits, Money.MaxMinorUnits);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-        if (name.Length > NameMaxLength)
-        {
-            throw new ArgumentException($"Currency name must be {NameMaxLength} characters or fewer.", nameof(name));
-        }
-
-        return new Currency(code, minorUnits, name);
+        return name.Length > NameMaxLength
+            ? throw new ArgumentException($"Currency name must be {NameMaxLength} characters or fewer.", nameof(name))
+            : new Currency(code, minorUnits, name);
     }
 }

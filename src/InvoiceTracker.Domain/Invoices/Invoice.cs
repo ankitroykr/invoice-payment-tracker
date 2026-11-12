@@ -85,7 +85,7 @@ public sealed class Invoice : IAggregateRoot
     public static Invoice Create(int customerId, string currency, int currencyMinorUnits)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(customerId);
-        _ = Money.Zero(currency);
+        Money.ThrowIfInvalidCode(currency);
         ArgumentOutOfRangeException.ThrowIfNegative(currencyMinorUnits);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(currencyMinorUnits, Money.MaxMinorUnits);
 

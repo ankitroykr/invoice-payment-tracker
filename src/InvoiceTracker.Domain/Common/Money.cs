@@ -1,4 +1,6 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 
 namespace InvoiceTracker.Domain.Common;
 
@@ -31,25 +33,11 @@ public sealed record Money
     /// <exception cref="ArgumentException">The currency is empty, whitespace, or not three uppercase letters.</exception>
     public Money(decimal amount, string currency)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(currency);
-
-        if (!IsValidCode(currency))
-        {
-            throw new ArgumentException(
-                $"Currency '{currency}' is not a valid ISO 4217 code; expected 3 uppercase letters such as GBP.",
-                nameof(currency));
-        }
+        ThrowIfInvalidCode(currency);
 
         Amount = amount;
         Currency = currency;
     }
-
-    /// <summary>
-    /// Creates a zero amount, the starting point for adding up totals.
-    /// </summary>
-    /// <param name="currency">A three-letter uppercase ISO 4217 code, for example, GBP.</param>
-    /// <returns>A <see cref="Money"/> of 0 in the given currency.</returns>
-    public static Money Zero(string currency) => new(0, currency);
 
     /// <summary>
     /// Checks whether a currency code has the ISO 4217 format: three uppercase letters, for example, GBP.
@@ -58,6 +46,27 @@ public sealed record Money
     /// <param name="code">The code to check. Null is allowed and returns false.</param>
     /// <returns><see langword="true"/> if the code is three uppercase letters; otherwise <see langword="false"/>.</returns>
     public static bool IsValidCode(string? code) => code is { Length: 3 } && code.All(char.IsAsciiLetterUpper);
+
+    /// <summary>
+    /// Throws if a currency code doesn't have the ISO 4217 format: three uppercase letters, for example, GBP.
+    /// It only checks the format, not whether the currency actually exists.
+    /// </summary>
+    /// <param name="currencyCode">The code to check.</param>
+    /// <param name="paramName">The name of the caller's argument. Leave it out; the compiler fills it in.</param>
+    /// <exception cref="ArgumentNullException">The code is null.</exception>
+    /// <exception cref="ArgumentException">The code is empty, whitespace, or not three uppercase letters.</exception>
+    public static void ThrowIfInvalidCode([NotNull] string? currencyCode,
+        [CallerArgumentExpression(nameof(currencyCode))] string? paramName = null)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(currencyCode, paramName);
+
+        if (!IsValidCode(currencyCode))
+        {
+            throw new ArgumentException(
+                $"Currency code '{currencyCode}' is not a valid ISO 4217 code; expected 3 uppercase letters such as GBP.",
+                paramName);
+        }
+    }
 
     /// <summary>
     /// Rounds the amount to the currency's minor units, with halves rounded away from zero.

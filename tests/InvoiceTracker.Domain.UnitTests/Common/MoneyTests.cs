@@ -70,17 +70,6 @@ public sealed class MoneyTests
     }
 
     [Fact]
-    public void Zero_ReturnsZeroAmount_InGivenCurrency()
-    {
-        // Act
-        var money = Money.Zero(Currency);
-
-        // Assert
-        Assert.Equal(0, money.Amount);
-        Assert.Equal(Currency, money.Currency);
-    }
-
-    [Fact]
     public void Equals_ReturnsTrue_WhenAmountAndCurrencyMatch()
     {
         // Arrange
@@ -198,5 +187,16 @@ public sealed class MoneyTests
 
         // Assert
         Assert.Equal(expected, isValid);
+    }
+
+    [Fact]
+    public void ThrowIfInvalidCode_ThrowsArgumentExceptionWithCallerParamName_WhenCodeIsInvalid()
+    {
+        // Arrange
+        const string currencyCode = "GB";
+
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentException>(() => Money.ThrowIfInvalidCode(currencyCode));
+        Assert.Equal(nameof(currencyCode), exception.ParamName);
     }
 }

@@ -168,6 +168,19 @@ namespace InvoiceTracker.Infrastructure.Data.Migrations
                     b.ToTable("InvoiceLines", (string)null);
                 });
 
+            modelBuilder.Entity("InvoiceTracker.Infrastructure.Invoices.InvoiceNumberSeries", b =>
+                {
+                    b.Property<int>("Year")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LastNumber")
+                        .HasColumnType("int");
+
+                    b.HasKey("Year");
+
+                    b.ToTable("InvoiceNumberSeries", (string)null);
+                });
+
             modelBuilder.Entity("InvoiceTracker.Domain.Invoices.Invoice", b =>
                 {
                     b.HasOne("InvoiceTracker.Domain.Currencies.Currency", null)

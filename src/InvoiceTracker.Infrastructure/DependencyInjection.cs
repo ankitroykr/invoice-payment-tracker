@@ -8,6 +8,7 @@ using InvoiceTracker.Infrastructure.Currencies;
 using InvoiceTracker.Infrastructure.Data;
 using InvoiceTracker.Infrastructure.Data.Queries;
 using InvoiceTracker.Infrastructure.Data.Repositories;
+using InvoiceTracker.Infrastructure.Invoices;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,6 +36,8 @@ public static class DependencyInjection
 
         services.AddScoped<ICustomerQueries, CustomerQueries>();
         services.AddScoped<IInvoiceQueries, InvoiceQueries>();
+
+        services.AddScoped<IInvoiceNumberCounter, InvoiceNumberCounter>();
 
         services.AddHybridCache();
         services.AddScoped<ICurrencyProvider, CachedCurrencyProvider>();

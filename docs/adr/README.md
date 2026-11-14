@@ -26,3 +26,4 @@ The significant decisions behind this project, one short file each, in [MADR](ht
 | [0020](0020-currency-once-per-invoice.md) | Store the currency once per invoice | Accepted |
 | [0021](0021-entra-id-access-tokens-and-app-roles.md) | Protect the API with Entra ID access tokens and app roles | Accepted |
 | [0022](0022-host-on-azure-free-tiers.md) | Host the API on the App Service and Azure SQL free tiers | Accepted |
+| [0023](0023-generate-invoice-numbers.md) | Take invoice numbers from a counter per year | Accepted |

@@ -38,6 +38,7 @@ public static class DependencyInjection
         services.AddScoped<IInvoiceQueries, InvoiceQueries>();
 
         services.AddScoped<IInvoiceNumberCounter, InvoiceNumberCounter>();
+        services.AddSingleton(TimeProvider.System);
 
         services.AddHybridCache();
         services.AddScoped<ICurrencyProvider, CachedCurrencyProvider>();

@@ -11,7 +11,7 @@ namespace InvoiceTracker.Application.Invoices.IssueInvoice;
 /// </summary>
 /// <param name="validator">Validates the command.</param>
 /// <param name="invoiceRepository">Loads the invoice to issue.</param>
-/// <param name="invoiceNumberCounter">Hands out the invoice's number.</param>
+/// <param name="invoiceNumberCounter">Hands out the invoice's sequence.</param>
 /// <param name="unitOfWork">Saves the issued invoice to the database.</param>
 /// <param name="timeProvider">Gives today's date in UTC, which is the issue date and picks the year of the number.</param>
 public sealed class IssueInvoiceHandler(
@@ -25,7 +25,7 @@ public sealed class IssueInvoiceHandler(
     /// Issues the invoice the command names, dated today in UTC, with the next number for this year.
     /// </summary>
     /// <param name="command">The invoice to issue and its due date.</param>
-    /// <param name="cancellationToken">Cancels the validation, the lookup, taking the number, and the save.</param>
+    /// <param name="cancellationToken">Cancels the validation, the lookup, taking the sequence, and the save.</param>
     /// <returns>
     /// A successful result, a validation error with field errors when the command is invalid,
     /// <see cref="InvoiceErrors.NotFound"/> when the invoice doesn't exist,
@@ -57,7 +57,7 @@ public sealed class IssueInvoiceHandler(
 
         var today = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
 
-        var sequence = await invoiceNumberCounter.GetNextAsync(today.Year, cancellationToken);
+        var sequence = await invoiceNumberCounter.GetNextSequenceAsync(today.Year, cancellationToken);
 
         var result = invoice.Issue(sequence, today, command.DueDate);
 

@@ -173,7 +173,7 @@ namespace InvoiceTracker.Infrastructure.Data.Migrations
                     b.Property<int>("Year")
                         .HasColumnType("int");
 
-                    b.Property<int>("LastNumber")
+                    b.Property<int>("LastSequence")
                         .HasColumnType("int");
 
                     b.HasKey("Year");

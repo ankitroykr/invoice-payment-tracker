@@ -63,7 +63,7 @@ public sealed class IssueInvoiceHandlerTests
 
         _invoiceRepository.GetByIdAsync(InvoiceId, Arg.Any<CancellationToken>())
             .Returns(invoice);
-        _invoiceNumberCounter.GetNextAsync(2026, Arg.Any<CancellationToken>())
+        _invoiceNumberCounter.GetNextSequenceAsync(2026, Arg.Any<CancellationToken>())
             .Returns(5);
 
         // Act
@@ -92,7 +92,7 @@ public sealed class IssueInvoiceHandlerTests
 
         // Assert
         Assert.Equal(InvoiceErrors.NoLines, result.Error);
-        await _invoiceNumberCounter.DidNotReceive().GetNextAsync(Arg.Any<int>(), Arg.Any<CancellationToken>());
+        await _invoiceNumberCounter.DidNotReceive().GetNextSequenceAsync(Arg.Any<int>(), Arg.Any<CancellationToken>());
         await _unitOfWork.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
@@ -116,7 +116,7 @@ public sealed class IssueInvoiceHandlerTests
 
         // Assert
         Assert.Equal(InvoiceErrors.NotDraft, result.Error);
-        await _invoiceNumberCounter.DidNotReceive().GetNextAsync(Arg.Any<int>(), Arg.Any<CancellationToken>());
+        await _invoiceNumberCounter.DidNotReceive().GetNextSequenceAsync(Arg.Any<int>(), Arg.Any<CancellationToken>());
         await _unitOfWork.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
@@ -139,6 +139,6 @@ public sealed class IssueInvoiceHandlerTests
 
         // Assert
         Assert.Equal(ErrorType.Validation, result.Error?.Type);
-        await _invoiceNumberCounter.DidNotReceive().GetNextAsync(Arg.Any<int>(), Arg.Any<CancellationToken>());
+        await _invoiceNumberCounter.DidNotReceive().GetNextSequenceAsync(Arg.Any<int>(), Arg.Any<CancellationToken>());
     }
 }

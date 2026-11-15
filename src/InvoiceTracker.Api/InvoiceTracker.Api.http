@@ -104,6 +104,24 @@ GET {{invoiceLocation}}
 Authorization: Bearer {{readToken}}
 Accept: application/json
 
+### Issue the invoice just created
+# 204 with no body. Run "Create an invoice" first, as it sets invoiceLocation.
+# The script sets the due date to 30 days from today in UTC. Running it twice gives 422, as the invoice is no longer a draft.
+# Run "Get the invoice just created" after it to see the number, the status and the dates.
+< {%
+    const dueDate = new Date();
+    dueDate.setUTCDate(dueDate.getUTCDate() + 30);
+    request.variables.set("dueDate", dueDate.toISOString().slice(0, 10));
+%}
+POST {{invoiceLocation}}/issue
+Authorization: Bearer {{writeToken}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "dueDate": "{{dueDate}}"
+}
+
 ### Create an invoice with an unsupported currency
 # 422 Problem Details: a business rule (Invoice.CurrencyNotSupported), as XYZ is a valid code format but not a supported currency.
 POST {{baseUrl}}/api/invoices

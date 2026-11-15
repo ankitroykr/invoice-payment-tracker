@@ -4,7 +4,6 @@ using System.Net.Http.Json;
 
 using InvoiceTracker.Api.IntegrationTests.Infrastructure;
 using InvoiceTracker.Api.Security;
-using InvoiceTracker.Application.Customers;
 using InvoiceTracker.Application.Invoices;
 
 using Microsoft.AspNetCore.Mvc;
@@ -13,10 +12,6 @@ namespace InvoiceTracker.Api.IntegrationTests.Invoices;
 
 public sealed class CreateInvoiceTests(InvoiceTrackerApiFactory factory)
 {
-    private const string ValidCustomerName = "Test Customer";
-
-    private const string ValidCustomerEmail = "tester@example.com";
-
     private const string Currency = "GBP";
 
     private const string UnsupportedCurrency = "CHF";
@@ -28,7 +23,7 @@ public sealed class CreateInvoiceTests(InvoiceTrackerApiFactory factory)
     {
         // Arrange
         var client = factory.CreateAuthenticatedClient(AppRoles.ReadWrite);
-        var customerId = await CreateCustomerAsync(client);
+        var customerId = await client.CreateCustomerAsync();
 
         // Act
         var response = await client.PostAsJsonAsync("api/invoices",
@@ -94,7 +89,7 @@ public sealed class CreateInvoiceTests(InvoiceTrackerApiFactory factory)
     {
         // Arrange
         var client = factory.CreateAuthenticatedClient(AppRoles.ReadWrite);
-        var customerId = await CreateCustomerAsync(client);
+        var customerId = await client.CreateCustomerAsync();
 
         // Act
         var response = await client.PostAsJsonAsync("api/invoices",
@@ -119,7 +114,7 @@ public sealed class CreateInvoiceTests(InvoiceTrackerApiFactory factory)
     {
         // Arrange
         var client = factory.CreateAuthenticatedClient(AppRoles.ReadWrite);
-        var customerId = await CreateCustomerAsync(client);
+        var customerId = await client.CreateCustomerAsync();
 
         // Act
         var response = await client.PostAsJsonAsync("api/invoices",
@@ -134,19 +129,5 @@ public sealed class CreateInvoiceTests(InvoiceTrackerApiFactory factory)
         Assert.NotNull(problem);
         Assert.True(problem.Extensions.ContainsKey("traceId"));
         Assert.Equal(["'Lines' must not be empty."], problem.Errors["Lines"]);
-    }
-
-    private static async Task<int> CreateCustomerAsync(HttpClient client)
-    {
-        var response = await client.PostAsJsonAsync("api/customers",
-            new { Name = ValidCustomerName, Email = ValidCustomerEmail },
-            TestContext.Current.CancellationToken);
-
-        response.EnsureSuccessStatusCode();
-
-        var customer = await client.GetFromJsonAsync<CustomerResponse>(response.Headers.Location,
-            TestContext.Current.CancellationToken);
-
-        return customer!.Id;
     }
 }

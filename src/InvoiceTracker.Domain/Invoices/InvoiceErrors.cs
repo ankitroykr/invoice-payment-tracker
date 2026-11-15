@@ -3,7 +3,8 @@ using InvoiceTracker.Domain.Common;
 namespace InvoiceTracker.Domain.Invoices;
 
 /// <summary>
-/// The errors returned when an <see cref="Invoice"/> refuses an action because a business rule does not allow it.
+/// The errors returned when an action on an <see cref="Invoice"/> cannot go ahead,
+/// because a business rule does not allow it or the invoice does not exist.
 /// </summary>
 public static class InvoiceErrors
 {
@@ -36,4 +37,9 @@ public static class InvoiceErrors
     /// </summary>
     public static readonly Error CurrencyNotSupported =
         Error.BusinessRule("Invoice.CurrencyNotSupported", "The currency for this invoice is not supported.");
+
+    /// <summary>
+    /// No invoice has the given identifier, so the action cannot go ahead.
+    /// </summary>
+    public static readonly Error NotFound = Error.NotFound("Invoice.NotFound", "The invoice was not found.");
 }

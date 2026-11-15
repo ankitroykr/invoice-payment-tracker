@@ -7,10 +7,10 @@ namespace InvoiceTracker.Infrastructure.Invoices;
 
 public sealed class InvoiceNumberCounter(InvoiceTrackerDbContext dbContext) : IInvoiceNumberCounter
 {
-    public async Task<int> GetNextAsync(int year, CancellationToken cancellationToken = default)
+    public async Task<int> GetNextSequenceAsync(int year, CancellationToken cancellationToken = default)
     {
-        var numbers = await dbContext.Database.SqlQuery<int>($"""
-                      INSERT INTO dbo.InvoiceNumberSeries (Year, LastNumber)
+        var sequences = await dbContext.Database.SqlQuery<int>($"""
+                      INSERT INTO dbo.InvoiceNumberSeries (Year, LastSequence)
                       SELECT {year}, 0
                       WHERE NOT EXISTS (
                           SELECT 1
@@ -18,11 +18,11 @@ public sealed class InvoiceNumberCounter(InvoiceTrackerDbContext dbContext) : II
                           WHERE Year = {year});
 
                       UPDATE dbo.InvoiceNumberSeries
-                      SET LastNumber = LastNumber + 1
-                      OUTPUT inserted.LastNumber AS Value
+                      SET LastSequence = LastSequence + 1
+                      OUTPUT inserted.LastSequence AS Value
                       WHERE Year = {year};
                       """).ToListAsync(cancellationToken);
 
-        return numbers.Single();
+        return sequences.Single();
     }
 }

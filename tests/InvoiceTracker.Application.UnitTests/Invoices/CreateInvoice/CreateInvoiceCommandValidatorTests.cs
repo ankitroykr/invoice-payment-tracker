@@ -39,7 +39,7 @@ public sealed class CreateInvoiceCommandValidatorTests
         var result = _validator.TestValidate(command);
 
         // Assert
-        result.ShouldHaveValidationErrorFor(command => command.CustomerId);
+        result.ShouldHaveValidationErrorFor(createInvoiceCommand => createInvoiceCommand.CustomerId);
     }
 
     [Theory]
@@ -58,7 +58,7 @@ public sealed class CreateInvoiceCommandValidatorTests
         var result = _validator.TestValidate(command);
 
         // Assert
-        result.ShouldHaveValidationErrorFor(command => command.Currency);
+        result.ShouldHaveValidationErrorFor(createInvoiceCommand => createInvoiceCommand.Currency);
     }
 
     [Fact]
@@ -71,7 +71,7 @@ public sealed class CreateInvoiceCommandValidatorTests
         var result = _validator.TestValidate(command);
 
         // Assert
-        result.ShouldHaveValidationErrorFor(command => command.Currency)
+        result.ShouldHaveValidationErrorFor(createInvoiceCommand => createInvoiceCommand.Currency)
             .WithErrorMessage("'Currency' must be a three-letter uppercase ISO 4217 code, for example, GBP.");
     }
 
@@ -87,7 +87,8 @@ public sealed class CreateInvoiceCommandValidatorTests
         var result = _validator.TestValidate(command);
 
         // Assert
-        var error = Assert.Single(result.ShouldHaveValidationErrorFor(command => command.Currency));
+        var error = Assert.Single(
+            result.ShouldHaveValidationErrorFor(createInvoiceCommand => createInvoiceCommand.Currency));
         Assert.Equal("'Currency' must not be empty.", error.ErrorMessage);
     }
 
@@ -101,7 +102,7 @@ public sealed class CreateInvoiceCommandValidatorTests
         var result = _validator.TestValidate(command);
 
         // Assert
-        result.ShouldHaveValidationErrorFor(command => command.Lines);
+        result.ShouldHaveValidationErrorFor(createInvoiceCommand => createInvoiceCommand.Lines);
     }
 
     [Fact]

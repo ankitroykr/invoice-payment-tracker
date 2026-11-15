@@ -150,14 +150,11 @@ public sealed class Invoice : IAggregateRoot
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(dueDate, issueDate);
 
-        if (Status != InvoiceStatus.Draft)
-        {
-            return Result.Failure(InvoiceErrors.NotDraft);
-        }
+        var result = CanIssue();
 
-        if (_lines.Count == 0)
+        if (!result.IsSuccess)
         {
-            return Result.Failure(InvoiceErrors.NoLines);
+            return result;
         }
 
         Number = new InvoiceNumber(issueDate.Year, sequence);
@@ -182,6 +179,28 @@ public sealed class Invoice : IAggregateRoot
         }
 
         Status = InvoiceStatus.Void;
+
+        return Result.Success();
+    }
+
+    /// <summary>
+    /// Checks whether the invoice can be issued, without changing it.
+    /// </summary>
+    /// <returns>
+    /// A success, or a failure with <see cref="InvoiceErrors.NotDraft"/> when the invoice is no longer a draft,
+    /// or <see cref="InvoiceErrors.NoLines"/> when it has no lines.
+    /// </returns>
+    public Result CanIssue()
+    {
+        if (Status != InvoiceStatus.Draft)
+        {
+            return Result.Failure(InvoiceErrors.NotDraft);
+        }
+
+        if (_lines.Count == 0)
+        {
+            return Result.Failure(InvoiceErrors.NoLines);
+        }
 
         return Result.Success();
     }

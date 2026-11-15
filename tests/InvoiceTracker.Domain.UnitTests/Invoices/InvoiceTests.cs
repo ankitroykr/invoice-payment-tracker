@@ -298,6 +298,49 @@ public sealed class InvoiceTests
         Assert.Equal(InvoiceErrors.NotIssued, result.Error);
     }
 
+    [Fact]
+    public void CanIssue_ReturnsSuccess_WhenDraftHasLines()
+    {
+        // Arrange
+        var invoice = CreateDraftWithLine();
+
+        // Act
+        var result = invoice.CanIssue();
+
+        // Assert
+        Assert.Equal(InvoiceStatus.Draft, invoice.Status);
+        Assert.True(result.IsSuccess);
+    }
+
+    [Fact]
+    public void CanIssue_ReturnsNoLines_WhenDraftHasNoLines()
+    {
+        // Arrange
+        var invoice = Invoice.Create(CustomerId, Currency, MinorUnits);
+
+        // Act
+        var result = invoice.CanIssue();
+
+        // Assert
+        Assert.True(result.IsFailure);
+        Assert.Equal(InvoiceErrors.NoLines, result.Error);
+    }
+
+    [Fact]
+    public void CanIssue_ReturnsNotDraft_WhenInvoiceIsAlreadyIssued()
+    {
+        // Arrange
+        var invoice = CreateDraftWithLine();
+        _ = invoice.Issue(1, IssueDate, DueDate);
+
+        // Act
+        var result = invoice.CanIssue();
+
+        // Assert
+        Assert.True(result.IsFailure);
+        Assert.Equal(InvoiceErrors.NotDraft, result.Error);
+    }
+
     private static Invoice CreateDraftWithLine()
     {
         var invoice = Invoice.Create(CustomerId, Currency, MinorUnits);

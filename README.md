@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/ankitroykr/invoice-payment-tracker/actions/workflows/ci.yml/badge.svg)](https://github.com/ankitroykr/invoice-payment-tracker/actions/workflows/ci.yml) [![Licence](https://img.shields.io/github/license/ankitroykr/invoice-payment-tracker)](LICENSE) [![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4)](https://dotnet.microsoft.com/download/dotnet/10.0)
 
-A personal project to build an invoice and payment tracker from scratch, the way I would at work: in small pull requests, with CI checking every change.
+An invoice and payment tracker, built in small pull requests with CI checking every change.
 
 When complete, the application will let freelancers create invoices, record full and partial payments, and keep track of outstanding and overdue balances. It is built with ASP.NET Core and SQL Server and hosted on Azure, with an Angular front end planned.
 
@@ -22,12 +22,13 @@ When complete, the application will let freelancers create invoices, record full
 - [x] Application layer and Customers API: create a customer and get it by ID, with validation errors
 - [x] Invoices API: create a draft invoice and get it by ID, with line totals rounded to the currency's decimal places
 - [x] Authentication with Microsoft Entra ID access tokens, and app roles checked through authorization policies
-- [ ] Issue, void and list invoices
+- [x] Continuous delivery (CD) to Azure App Service and Azure SQL from GitHub Actions, with no stored secrets
+- [x] GitHub Actions pinned to commit SHAs and kept up to date by Dependabot
+- [x] Issue an invoice, giving it the next number for the year
+- [ ] Void and list invoices
 - [ ] Payment recording with idempotency and concurrency control
 - [ ] Angular website, with user sign-in
 - [ ] Per-user data isolation
-- [x] Continuous deployment (CD) to Azure App Service and Azure SQL from GitHub Actions, with no stored secrets
-- [x] GitHub Actions pinned to commit SHAs and kept up to date by Dependabot
 - [ ] Background reminders and monitoring
 
 ## Technology stack
@@ -203,29 +204,15 @@ The document describes the bearer token, so Scalar shows an authentication box. 
 | `POST /api/customers` | Creates a customer from a name and an email address. Returns `201` with a `Location` header pointing at the new customer and no body, or `400` with the problems for each field. |
 | `GET /api/customers/{id}` | Returns the customer's ID, name and email address, or `404` when there is no customer with that ID. |
 
-For example, posting an empty name and an invalid email address returns:
-
-```json
-{
-  "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
-  "title": "One or more validation errors occurred.",
-  "status": 400,
-  "errors": {
-    "Name": ["'Name' must not be empty."],
-    "Email": ["'Email' is not a valid email address."]
-  },
-  "traceId": "00-d6028d342e73878e02727bde878a5146-80f0910a58c63abd-00"
-}
-```
-
 ### Invoices
 
 | Endpoint | Purpose |
 |---|---|
 | `POST /api/invoices` | Creates a draft invoice from a customer ID, a currency and at least one line, each with a description, quantity and unit price. Returns `201` with a `Location` header pointing at the new invoice and no body, `400` with the problems for each field, or `422` when the customer doesn't exist or the currency isn't supported. |
 | `GET /api/invoices/{id}` | Returns the invoice with its status, number, dates, total and lines, or `404` when there is no invoice with that ID. |
+| `POST /api/invoices/{id}/issue` | Issues a draft invoice with the due date in the body, which must be today or later. The invoice gets the next number for the year, such as `INV-2026-0001`, and today's date in UTC as its issue date. Returns `204` with no body, `400` with the problems for each field, `404` when there is no invoice with that ID, or `422` when the invoice isn't a draft or has no lines. |
 
-The supported currencies are GBP, EUR, USD and INR. Each line total is rounded to the currency's decimal places, with halves away from zero, and the invoice total is the sum of the rounded lines. Quantities and unit prices keep up to 4 decimal places.
+The supported currencies are GBP, EUR, USD and INR. Quantities and unit prices keep up to 4 decimal places.
 
 For example, a draft in GBP with 4 × 55 and 1 × 0.125 returns:
 
@@ -253,11 +240,7 @@ For example, a draft in GBP with 4 × 55 and 1 × 0.125 returns:
 | `GET /health/live` | Liveness: the process is running and responding. Runs no dependency checks. |
 | `GET /health/ready` | Readiness: the API's dependencies are available. Runs the checks tagged `ready` (currently the SQL Server connection) and returns `503` when the database is unreachable. |
 
-Both return JSON. For example, from `/health/ready`:
-
-```json
-{ "status": "Healthy", "checks": [ { "name": "database", "status": "Healthy", "description": null } ] }
-```
+Both return JSON with the overall status and the result of each check.
 
 ### Example requests
 
@@ -303,7 +286,6 @@ The API logs with Serilog. Levels and outputs are set in the `Serilog` section o
 - **File:** in Development only ([`appsettings.Development.json`](src/InvoiceTracker.Api/appsettings.Development.json)), a daily rolling file named `logs/log-yyyyMMdd.txt` in the working directory (the project folder when run from Rider). Files are kept for 14 days, up to 31 files. The `logs` folder is git-ignored.
 - **Requests:** each HTTP request is written as one structured event with the method, path, status code and elapsed time. `5xx` responses are logged as errors. The framework's own per-request logs are reduced by setting `Microsoft.AspNetCore` to `Warning`.
 - **Startup:** a console-only bootstrap logger runs before configuration loads, so a failed startup is still logged.
-- **Format:** console and file lines use a Serilog.Expressions `ExpressionTemplate`, configured in the same `appsettings` files. Output is plain text, without colours, so it reads the same on light and dark backgrounds.
 - **Caller:** when a request has a token, its log line also shows `caller=`, the token's `oid` claim (the user or app that called), and `client=`, its `azp` claim (the client ID of the calling app). Requests without a token leave both out.
 - **Trace ID:** each line written during a request ends with the request's trace ID in brackets, matching the `traceId` in error responses. Lines written outside a request, such as at startup, have no trace ID and end after the message.
 
@@ -325,17 +307,7 @@ With Docker Desktop running, from the repository root:
 dotnet test --solution InvoiceTracker.sln
 ```
 
-Or run them from the test runner in Rider.
-
-The domain and application unit tests need no Docker or database and run in about a second. To run only those:
-
-```bash
-dotnet test --project tests/InvoiceTracker.Domain.UnitTests
-```
-
-```bash
-dotnet test --project tests/InvoiceTracker.Application.UnitTests
-```
+Or run them from the test runner in Rider. The unit tests need no Docker or database and run in about a second, for example `dotnet test --project tests/InvoiceTracker.Domain.UnitTests`.
 
 The integration tests do not use the Compose database or the connection string above. Each run starts one SQL Server container with Testcontainers and one in-memory instance of the API with `WebApplicationFactory`, shared by all test classes through an xUnit assembly fixture, and removes the container afterwards. The fixture applies the EF Core migrations when it starts, so the test database has the same schema as the real one. The first run is slower while the SQL Server image downloads.
 
@@ -345,15 +317,13 @@ The integration tests sign their own access tokens with a random key, created fo
 
 Every pull request to `main`, and every push to `main`, runs the [CI workflow](.github/workflows/ci.yml) on GitHub Actions. It restores, builds and tests the solution in Release, using the SDK pinned in `global.json`. The integration tests start SQL Server in Docker on the GitHub Actions runner. Pull requests can only be merged once the `build` check passes.
 
-The workflow is based on GitHub's official [.NET starter workflow](https://github.com/actions/starter-workflows/blob/main/ci/dotnet.yml). I updated the action versions, read the SDK version from `global.json`, and added read-only permissions and cancellation of outdated runs.
+The workflow is based on GitHub's [.NET starter workflow](https://github.com/actions/starter-workflows/blob/main/ci/dotnet.yml), with read-only permissions and cancellation of outdated runs.
 
 Every action in both workflows is pinned to a full commit SHA, with its version in a comment, so a tag moved upstream can't change what runs. [Dependabot](.github/dependabot.yml) checks for new versions every week and opens a pull request to update the pins.
 
-Runs are listed under the repository's [Actions tab](https://github.com/ankitroykr/invoice-payment-tracker/actions).
+## Continuous delivery (CD)
 
-## Continuous deployment (CD)
-
-When CI passes on a push to `main`, the [deploy workflow](.github/workflows/deploy.yml) releases that commit to Azure. It can also be started by hand from the Actions tab.
+When CI passes on a push to `main`, the [deploy workflow](.github/workflows/deploy.yml) deploys that commit to Azure. The deploy job waits for a required reviewer to approve it on the `production` environment. It can also be started by hand from the Actions tab.
 
 1. Publishes the API and builds an EF Core migration bundle.
 2. Signs in to Azure with OpenID Connect as a user-assigned managed identity. Azure trusts it only for this repository's `production` environment, which only `main` can deploy to, so no password or publish profile is stored in GitHub.
@@ -394,7 +364,6 @@ The reasons for these choices are in [ADR 0022](docs/adr/0022-host-on-azure-free
 - [Handle errors in ASP.NET Core APIs](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/error-handling-api)
 - [Use the generated OpenAPI documents in ASP.NET Core](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/openapi/using-openapi-documents)
 - [Scalar for ASP.NET Core](https://guides.scalar.com/scalar/scalar-api-references/integrations/net-aspnet-core)
-- [RFC 9457: Problem Details for HTTP APIs](https://www.rfc-editor.org/rfc/rfc9457)
 - [W3C Trace Context](https://www.w3.org/TR/trace-context/)
 - [Testing with dotnet test](https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-platform-integration-dotnet-test)
 - [FluentValidation](https://docs.fluentvalidation.net/en/latest/)

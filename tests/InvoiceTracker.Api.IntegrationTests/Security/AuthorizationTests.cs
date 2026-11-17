@@ -19,6 +19,8 @@ public sealed class AuthorizationTests(InvoiceTrackerApiFactory factory)
         { "POST", "api/invoices", [AppRoles.Read] },
         { "POST", $"api/invoices/{IdThatDoesNotExist}/issue", [] },
         { "POST", $"api/invoices/{IdThatDoesNotExist}/issue", [AppRoles.Read] },
+        { "POST", $"api/invoices/{IdThatDoesNotExist}/void", [] },
+        { "POST", $"api/invoices/{IdThatDoesNotExist}/void", [AppRoles.Read] },
     };
 
     [Theory]

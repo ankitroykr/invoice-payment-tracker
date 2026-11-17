@@ -130,8 +130,7 @@ public sealed class InvoiceTests
     public void AddLine_ReturnsNotDraft_WhenInvoiceIsIssued()
     {
         // Arrange
-        var invoice = CreateDraftWithLine();
-        invoice.Issue(1, IssueDate, DueDate);
+        var invoice = CreateIssuedInvoice();
 
         // Act
         var result = invoice.AddLine("Bug fixes after go-live", 3m, new Money(45m, "GBP"));
@@ -230,8 +229,7 @@ public sealed class InvoiceTests
     public void Issue_ReturnsNotDraft_WhenInvoiceIsAlreadyIssued()
     {
         // Arrange
-        var invoice = CreateDraftWithLine();
-        invoice.Issue(1, IssueDate, DueDate);
+        var invoice = CreateIssuedInvoice();
 
         // Act
         var result = invoice.Issue(2, IssueDate, DueDate);
@@ -256,8 +254,7 @@ public sealed class InvoiceTests
     public void Void_SetsStatusToVoid_WhenInvoiceIsIssued()
     {
         // Arrange
-        var invoice = CreateDraftWithLine();
-        invoice.Issue(1, IssueDate, DueDate);
+        var invoice = CreateIssuedInvoice();
 
         // Act
         var result = invoice.Void();
@@ -286,8 +283,7 @@ public sealed class InvoiceTests
     public void Void_ReturnsNotIssued_WhenInvoiceIsAlreadyVoid()
     {
         // Arrange
-        var invoice = CreateDraftWithLine();
-        invoice.Issue(1, IssueDate, DueDate);
+        var invoice = CreateIssuedInvoice();
         invoice.Void();
 
         // Act
@@ -330,8 +326,7 @@ public sealed class InvoiceTests
     public void CanIssue_ReturnsNotDraft_WhenInvoiceIsAlreadyIssued()
     {
         // Arrange
-        var invoice = CreateDraftWithLine();
-        _ = invoice.Issue(1, IssueDate, DueDate);
+        var invoice = CreateIssuedInvoice();
 
         // Act
         var result = invoice.CanIssue();
@@ -345,6 +340,13 @@ public sealed class InvoiceTests
     {
         var invoice = Invoice.Create(CustomerId, Currency, MinorUnits);
         invoice.AddLine("website work exploration", 7.5m, new Money(38m, Currency));
+        return invoice;
+    }
+
+    private static Invoice CreateIssuedInvoice()
+    {
+        var invoice = CreateDraftWithLine();
+        _ = invoice.Issue(1, IssueDate, DueDate);
         return invoice;
     }
 }

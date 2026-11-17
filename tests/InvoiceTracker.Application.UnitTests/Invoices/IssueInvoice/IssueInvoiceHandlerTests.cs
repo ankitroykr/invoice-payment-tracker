@@ -19,6 +19,12 @@ public sealed class IssueInvoiceHandlerTests
 
     private const int MinorUnits = 2;
 
+    private const string LineDescription = "Senior Engineer Onsite";
+
+    private const decimal LineQuantity = 7.5m;
+
+    private const decimal LineUnitPrice = 40m;
+
     private readonly FakeTimeProvider _fakeTimeProvider = new(new DateTimeOffset(2026, 11, 14, 0, 0, 0, TimeSpan.Zero));
 
     private readonly IInvoiceRepository _invoiceRepository = Substitute.For<IInvoiceRepository>();
@@ -55,11 +61,7 @@ public sealed class IssueInvoiceHandlerTests
     public async Task HandleAsync_IssuesTheInvoice_WhenItIsADraftWithLines()
     {
         // Arrange
-        const string description = "Senior Engineer Onsite";
-        const decimal quantity = 7.5m;
-        var unitPrice = new Money(40m, Currency);
-        var invoice = Invoice.Create(CustomerId, Currency, MinorUnits);
-        _ = invoice.AddLine(description, quantity, unitPrice);
+        var invoice = CreateDraftInvoice();
 
         _invoiceRepository.GetByIdAsync(InvoiceId, Arg.Any<CancellationToken>())
             .Returns(invoice);
@@ -100,12 +102,7 @@ public sealed class IssueInvoiceHandlerTests
     public async Task HandleAsync_DoesNotIncreaseTheSequence_WhenInvoiceIsAlreadyIssued()
     {
         // Arrange
-        const string description = "Senior Engineer Onsite";
-        const decimal quantity = 7.5m;
-        var unitPrice = new Money(40m, Currency);
-        var invoice = Invoice.Create(CustomerId, Currency, MinorUnits);
-        _ = invoice.AddLine(description, quantity, unitPrice);
-        _ = invoice.Issue(1, new DateOnly(2026, 11, 14), new DateOnly(2026, 12, 14));
+        var invoice = CreateIssuedInvoice();
 
         _invoiceRepository.GetByIdAsync(InvoiceId, Arg.Any<CancellationToken>())
             .Returns(invoice);
@@ -124,11 +121,7 @@ public sealed class IssueInvoiceHandlerTests
     public async Task HandleAsync_ReturnsValidationError_WhenDueDateIsBeforeToday()
     {
         // Arrange
-        const string description = "Senior Engineer Onsite";
-        const decimal quantity = 7.5m;
-        var unitPrice = new Money(40m, Currency);
-        var invoice = Invoice.Create(CustomerId, Currency, MinorUnits);
-        _ = invoice.AddLine(description, quantity, unitPrice);
+        var invoice = CreateDraftInvoice();
 
         _invoiceRepository.GetByIdAsync(InvoiceId, Arg.Any<CancellationToken>())
             .Returns(invoice);
@@ -140,5 +133,19 @@ public sealed class IssueInvoiceHandlerTests
         // Assert
         Assert.Equal(ErrorType.Validation, result.Error?.Type);
         await _invoiceNumberCounter.DidNotReceive().GetNextSequenceAsync(Arg.Any<int>(), Arg.Any<CancellationToken>());
+    }
+
+    private static Invoice CreateDraftInvoice()
+    {
+        var invoice = Invoice.Create(CustomerId, Currency, MinorUnits);
+        _ = invoice.AddLine(LineDescription, LineQuantity, new Money(LineUnitPrice, Currency));
+        return invoice;
+    }
+
+    private static Invoice CreateIssuedInvoice()
+    {
+        var invoice = CreateDraftInvoice();
+        _ = invoice.Issue(1, new DateOnly(2026, 11, 14), new DateOnly(2026, 12, 14));
+        return invoice;
     }
 }

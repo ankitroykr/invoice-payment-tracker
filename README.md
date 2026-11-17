@@ -211,6 +211,7 @@ The document describes the bearer token, so Scalar shows an authentication box. 
 | `POST /api/invoices` | Creates a draft invoice from a customer ID, a currency and at least one line, each with a description, quantity and unit price. Returns `201` with a `Location` header pointing at the new invoice and no body, `400` with the problems for each field, or `422` when the customer doesn't exist or the currency isn't supported. |
 | `GET /api/invoices/{id}` | Returns the invoice with its status, number, dates, total and lines, or `404` when there is no invoice with that ID. |
 | `POST /api/invoices/{id}/issue` | Issues a draft invoice with the due date in the body, which must be today or later. The invoice gets the next number for the year, such as `INV-2026-0001`, and today's date in UTC as its issue date. Returns `204` with no body, `400` with the problems for each field, `404` when there is no invoice with that ID, or `422` when the invoice isn't a draft or has no lines. |
+| `POST /api/invoices/{id}/void` | Voids an issued invoice, so nothing is owed on it. The invoice keeps its number. Returns `204` with no body, `400` when the ID isn't positive, `404` when there is no invoice with that ID, or `422` when the invoice is still a draft or already void. |
 
 The supported currencies are GBP, EUR, USD and INR. Quantities and unit prices keep up to 4 decimal places.
 

@@ -122,6 +122,14 @@ Content-Type: application/json
   "dueDate": "{{dueDate}}"
 }
 
+### Void the invoice just created
+# 204 with no body. Run "Issue the invoice just created" first.
+# Running it twice gives 422, as the invoice is already void.
+# Run "Get the invoice just created" after it to see the status.
+POST {{invoiceLocation}}/void
+Authorization: Bearer {{writeToken}}
+Accept: application/json
+
 ### Create an invoice with an unsupported currency
 # 422 Problem Details: a business rule (Invoice.CurrencyNotSupported), as XYZ is a valid code format but not a supported currency.
 POST {{baseUrl}}/api/invoices
